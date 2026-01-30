@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#1a1a1a">
-    <title>The Junction - Waiter POS Integrated</title>
+    <title>The Junction - Loyverse POS</title>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
@@ -17,8 +17,9 @@
             --staff: #FF9800;
             --success: #4CAF50;
             --management: #9C27B0;
-            --waiter: #FF5722;  /* Waiter POS Orange/Red */
-            --waiter-dark: #E64A19;
+            --loyverse: #00B894;  /* Loyverse signature teal/green */
+            --loyverse-dark: #00A383;
+            --loyverse-light: #E8F8F5;
         }
         
         * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; }
@@ -27,110 +28,115 @@
         .header { position: sticky; top: 0; background: rgba(26,26,26,0.95); backdrop-filter: blur(10px); padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; z-index: 100; border-bottom: 1px solid rgba(212,175,55,0.2); }
         .header h1 { font-family: 'Playfair Display', serif; font-size: 1.3rem; color: var(--gold); }
         .icon-btn { background: none; border: none; color: var(--light); font-size: 1.3rem; cursor: pointer; position: relative; }
-        .waiter-badge { position: absolute; top: -5px; right: -5px; background: var(--waiter); color: white; font-size: 0.6rem; padding: 2px 6px; border-radius: 10px; font-weight: bold; }
+        .loyverse-badge { position: absolute; top: -5px; right: -5px; background: var(--loyverse); color: white; font-size: 0.6rem; padding: 2px 6px; border-radius: 10px; font-weight: bold; }
         
         .nav-bar { position: fixed; bottom: 0; left: 0; width: 100%; background: rgba(26,26,26,0.98); border-top: 1px solid rgba(212,175,55,0.2); display: flex; justify-content: space-around; padding: 10px 0; z-index: 100; }
         .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 5px; color: #666; text-decoration: none; font-size: 0.7rem; transition: color 0.3s; }
         .nav-item.active { color: var(--gold); }
-        .nav-item.waiter-connected { color: var(--waiter); }
+        .nav-item.loyverse-connected { color: var(--loyverse); }
         .nav-item svg { width: 24px; height: 24px; }
         
         .section { display: none; padding: 20px; animation: fadeIn 0.3s; min-height: 100vh; }
         .section.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         
+        /* Loyverse Status Bar */
+        .loyverse-status { background: linear-gradient(90deg, rgba(0,184,148,0.1), rgba(0,184,148,0.05)); border: 1px solid var(--loyverse); border-radius: 10px; padding: 12px 15px; margin-bottom: 20px; display: none; align-items: center; gap: 10px; font-size: 0.85rem; }
+        .loyverse-status.connected { display: flex; }
+        .loyverse-dot { width: 8px; height: 8px; background: var(--loyverse); border-radius: 50%; animation: pulse 2s infinite; box-shadow: 0 0 10px var(--loyverse); }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        
         /* Camera Scanner Styles */
-        .camera-container { position: relative; width: 100%; height: 300px; background: #000; border-radius: 15px; overflow: hidden; margin-bottom: 20px; border: 2px solid var(--waiter); }
+        .camera-container { position: relative; width: 100%; height: 300px; background: #000; border-radius: 15px; overflow: hidden; margin-bottom: 20px; border: 2px solid var(--loyverse); }
         .camera-video { width: 100%; height: 100%; object-fit: cover; }
         .camera-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
-        .scan-line { position: absolute; width: 100%; height: 2px; background: var(--waiter); box-shadow: 0 0 10px var(--waiter); animation: scan 2s linear infinite; top: 0; }
-        .scan-target { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 200px; height: 200px; border: 2px dashed var(--waiter); border-radius: 10px; }
-        .scan-corner { position: absolute; width: 20px; height: 20px; border-color: var(--waiter); border-style: solid; }
+        .scan-line { position: absolute; width: 100%; height: 2px; background: var(--loyverse); box-shadow: 0 0 10px var(--loyverse); animation: scan 2s linear infinite; top: 0; }
+        .scan-target { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 200px; height: 200px; border: 2px dashed var(--loyverse); border-radius: 10px; }
+        .scan-corner { position: absolute; width: 20px; height: 20px; border-color: var(--loyverse); border-style: solid; }
         .scan-corner.tl { top: -2px; left: -2px; border-width: 4px 0 0 4px; }
         .scan-corner.tr { top: -2px; right: -2px; border-width: 4px 4px 0 0; }
         .scan-corner.bl { bottom: -2px; left: -2px; border-width: 0 0 4px 4px; }
         .scan-corner.br { bottom: -2px; right: -2px; border-width: 0 4px 4px 0; }
         
         .camera-controls { position: absolute; bottom: 15px; left: 50%; transform: translateX(-50%); display: flex; gap: 15px; z-index: 10; }
-        .camera-btn { background: rgba(0,0,0,0.7); border: 2px solid var(--waiter); color: white; padding: 10px 20px; border-radius: 25px; cursor: pointer; font-size: 0.9rem; backdrop-filter: blur(10px); }
-        .camera-btn.stop { background: var(--waiter); }
+        .camera-btn { background: rgba(0,0,0,0.7); border: 2px solid var(--loyverse); color: white; padding: 10px 20px; border-radius: 25px; cursor: pointer; font-size: 0.9rem; backdrop-filter: blur(10px); }
+        .camera-btn.stop { background: var(--loyverse); }
         
-        .scan-result { background: rgba(0,0,0,0.8); position: absolute; top: 10px; left: 10px; right: 10px; padding: 10px; border-radius: 8px; border: 1px solid var(--waiter); display: none; }
+        .scan-result { background: rgba(0,0,0,0.8); position: absolute; top: 10px; left: 10px; right: 10px; padding: 10px; border-radius: 8px; border: 1px solid var(--loyverse); display: none; color: var(--loyverse); font-weight: bold; }
         .scan-result.show { display: block; animation: slideDown 0.3s; }
-        @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
         
-        /* Waiter POS Status */
-        .waiter-status { background: linear-gradient(90deg, rgba(255,87,34,0.1), rgba(255,87,34,0.05)); border: 1px solid var(--waiter); border-radius: 10px; padding: 12px 15px; margin-bottom: 20px; display: none; align-items: center; gap: 10px; font-size: 0.85rem; }
-        .waiter-status.connected { display: flex; }
-        .waiter-dot { width: 8px; height: 8px; background: var(--waiter); border-radius: 50%; animation: pulse 2s infinite; box-shadow: 0 0 10px var(--waiter); }
-        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        @keyframes scan { 0% { top: 0; } 50% { top: 100%; } 100% { top: 0; } }
+        @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
         
         /* Loyalty Card */
         .loyalty-hero { background: linear-gradient(135deg, var(--primary) 0%, #6b1d29 100%); border-radius: 20px; padding: 25px; margin-bottom: 20px; position: relative; overflow: hidden; }
-        .waiter-sync-badge { position: absolute; top: 15px; right: 15px; background: var(--waiter); color: white; padding: 5px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: bold; display: none; z-index: 2; }
-        .waiter-sync-badge.show { display: block; }
+        .loyverse-sync-badge { position: absolute; top: 15px; right: 15px; background: var(--loyverse); color: white; padding: 5px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: bold; display: none; z-index: 2; }
+        .loyverse-sync-badge.show { display: block; }
         
-        .qr-section { background: white; border-radius: 15px; padding: 20px; display: flex; flex-direction: column; align-items: center; margin: 20px 0; border: 2px solid var(--waiter); }
+        .qr-section { background: white; border-radius: 15px; padding: 20px; display: flex; flex-direction: column; align-items: center; margin: 20px 0; border: 2px solid var(--loyverse); }
         .qr-code-container { background: white; padding: 15px; border-radius: 10px; margin-bottom: 10px; }
-        .qr-branding { display: flex; align-items: center; gap: 8px; color: var(--waiter); font-weight: bold; font-size: 0.9rem; margin-top: 5px; }
+        .qr-branding { display: flex; align-items: center; gap: 8px; color: var(--loyverse); font-weight: bold; font-size: 0.9rem; margin-top: 5px; }
         
         .stamp-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-top: 20px; }
-        .stamp { aspect-ratio: 1; border: 3px dashed rgba(255,255,255,0.3); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; background: rgba(0,0,0,0.2); }
+        .stamp { aspect-ratio: 1; border: 3px dashed rgba(255,255,255,0.3); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; background: rgba(0,0,0,0.2); transition: all 0.3s; }
         .stamp.earned { background: var(--gold); border-color: var(--gold); color: var(--dark); box-shadow: 0 0 15px rgba(212,175,55,0.5); }
+        .stamp.loyverse-synced { border-color: var(--loyverse); box-shadow: 0 0 10px rgba(0,184,148,0.3); }
         
-        /* Till Interface with Waiter POS */
+        /* Till Interface */
         .till-mode-switch { position: fixed; top: 100px; right: 20px; z-index: 99; background: var(--staff); color: white; padding: 10px 20px; border-radius: 30px; font-weight: bold; font-size: 0.85rem; cursor: pointer; display: none; align-items: center; gap: 8px; box-shadow: 0 4px 15px rgba(255,152,0,0.3); }
         .till-mode-switch.visible { display: flex; }
-        .till-mode-switch.waiter-mode { background: var(--waiter); box-shadow: 0 4px 15px rgba(255,87,34,0.3); }
+        .till-mode-switch.loyverse-mode { background: var(--loyverse); box-shadow: 0 4px 15px rgba(0,184,148,0.3); }
         
-        .till-interface { display: none; background: #2d2d2d; border-radius: 20px; padding: 25px; margin-bottom: 20px; border: 2px solid var(--waiter); position: relative; }
+        .till-interface { display: none; background: #2d2d2d; border-radius: 20px; padding: 25px; margin-bottom: 20px; border: 2px solid var(--loyverse); position: relative; }
         .till-interface.active { display: block; }
         
-        .waiter-terminal-header { position: absolute; top: -12px; left: 20px; background: var(--waiter); color: white; padding: 4px 15px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; display: flex; align-items: center; gap: 5px; }
+        .loyverse-terminal-header { position: absolute; top: -12px; left: 20px; background: var(--loyverse); color: white; padding: 4px 15px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; display: flex; align-items: center; gap: 5px; }
         
-        .manual-entry { background: rgba(255,87,34,0.1); border: 1px solid var(--waiter); border-radius: 12px; padding: 15px; margin-top: 20px; }
-        .manual-entry h4 { color: var(--waiter); margin-bottom: 10px; }
+        .manual-entry { background: rgba(0,184,148,0.1); border: 1px solid var(--loyverse); border-radius: 12px; padding: 15px; margin-top: 20px; }
+        .manual-entry h4 { color: var(--loyverse); margin-bottom: 10px; }
         
         .customer-found { display: none; background: rgba(76,175,80,0.1); border: 1px solid var(--success); border-radius: 15px; padding: 20px; margin-top: 20px; }
         .customer-found.show { display: block; animation: slideIn 0.3s; }
         
         .customer-card { display: flex; align-items: center; gap: 15px; margin-bottom: 15px; }
-        .customer-avatar { width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, var(--waiter) 0%, var(--waiter-dark) 100%); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: bold; color: white; }
+        .customer-avatar { width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, var(--loyverse) 0%, var(--loyverse-dark) 100%); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: bold; color: white; }
         
         .discount-banner { background: linear-gradient(135deg, rgba(255,152,0,0.2), rgba(255,152,0,0.1)); border: 2px solid var(--staff); border-radius: 10px; padding: 15px; text-align: center; margin-bottom: 15px; display: none; }
         .discount-banner.show { display: block; }
         
-        .basket-panel { background: rgba(255,87,34,0.05); border: 1px solid rgba(255,87,34,0.3); border-radius: 12px; padding: 15px; margin: 15px 0; }
-        .basket-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
-        .basket-total { display: flex; justify-content: space-between; font-weight: bold; margin-top: 10px; padding-top: 10px; border-top: 2px solid var(--waiter); color: var(--waiter); }
+        .receipt-panel { background: rgba(0,184,148,0.05); border: 1px solid rgba(0,184,148,0.3); border-radius: 12px; padding: 15px; margin: 15px 0; }
+        .receipt-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; color: var(--loyverse); font-weight: bold; border-bottom: 1px solid rgba(0,184,148,0.2); padding-bottom: 10px; }
+        .receipt-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.9rem; }
+        .receipt-total { display: flex; justify-content: space-between; font-weight: bold; margin-top: 10px; padding-top: 10px; border-top: 2px solid var(--loyverse); color: var(--loyverse); font-size: 1.1rem; }
         
         .stamp-controls { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
-        .btn-waiter { background: var(--waiter); color: white; width: 100%; padding: 15px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 1rem; }
-        .btn-waiter-secondary { background: transparent; border: 2px solid var(--waiter); color: var(--waiter); margin-top: 10px; }
+        .btn-loyverse { background: var(--loyverse); color: white; width: 100%; padding: 15px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 1rem; }
+        .btn-loyverse-secondary { background: transparent; border: 2px solid var(--loyverse); color: var(--loyverse); margin-top: 10px; }
         
-        /* Waiter POS Config */
-        .waiter-config { background: linear-gradient(135deg, rgba(255,87,34,0.1), rgba(230,74,25,0.05)); border-radius: 15px; padding: 20px; margin-bottom: 20px; border: 1px solid var(--waiter); display: none; }
-        .waiter-config.show { display: block; }
-        .waiter-config h3 { color: var(--waiter); margin-bottom: 15px; font-family: 'Playfair Display', serif; }
+        /* Loyverse Config */
+        .loyverse-config { background: linear-gradient(135deg, rgba(0,184,148,0.1), rgba(0,163,131,0.05)); border-radius: 15px; padding: 20px; margin-bottom: 20px; border: 1px solid var(--loyverse); display: none; }
+        .loyverse-config.show { display: block; }
+        .loyverse-config h3 { color: var(--loyverse); margin-bottom: 15px; font-family: 'Playfair Display', serif; }
         
-        .config-tabs { display: flex; gap: 10px; margin-bottom: 15px; }
-        .config-tab { flex: 1; padding: 10px; border: 1px solid rgba(255,255,255,0.2); background: transparent; color: #888; border-radius: 8px; cursor: pointer; font-size: 0.85rem; }
-        .config-tab.active { border-color: var(--waiter); color: var(--waiter); background: rgba(255,87,34,0.1); }
+        .config-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
         
         .sync-status { display: flex; align-items: center; gap: 10px; font-size: 0.85rem; color: #888; margin-top: 15px; padding: 10px; background: rgba(0,0,0,0.3); border-radius: 8px; }
-        .sync-spinner { width: 16px; height: 16px; border: 2px solid var(--waiter); border-top-color: transparent; border-radius: 50%; animation: spin 1s linear infinite; display: none; }
+        .sync-spinner { width: 16px; height: 16px; border: 2px solid var(--loyverse); border-top-color: transparent; border-radius: 50%; animation: spin 1s linear infinite; display: none; }
         .sync-spinner.active { display: block; }
         @keyframes spin { to { transform: rotate(360deg); } }
         
+        .feature-list { margin-top: 15px; padding: 15px; background: rgba(0,0,0,0.3); border-radius: 8px; font-size: 0.85rem; color: #888; }
+        .feature-list li { margin: 5px 0; }
+        
         /* Menu */
         .menu-item { background: #2d2d2d; border-radius: 12px; padding: 15px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; border: 1px solid rgba(255,255,255,0.05); position: relative; }
-        .menu-item.waiter-linked { border-left: 3px solid var(--waiter); }
-        .waiter-sku { position: absolute; top: 5px; right: 10px; font-size: 0.65rem; color: var(--waiter); font-family: monospace; background: rgba(255,87,34,0.1); padding: 2px 6px; border-radius: 4px; }
+        .menu-item.loyverse-linked { border-left: 3px solid var(--loyverse); }
+        .loyverse-sku { position: absolute; top: 5px; right: 10px; font-size: 0.65rem; color: var(--loyverse); font-family: monospace; background: rgba(0,184,148,0.1); padding: 2px 6px; border-radius: 4px; }
         
         /* Notifications */
         .notification { position: fixed; top: 80px; left: 50%; transform: translateX(-50%) translateY(-100%); background: var(--success); color: white; padding: 15px 30px; border-radius: 30px; font-weight: bold; z-index: 400; opacity: 0; transition: all 0.3s; box-shadow: 0 5px 20px rgba(0,0,0,0.3); }
         .notification.show { transform: translateX(-50%) translateY(0); opacity: 1; }
-        .notification.waiter { background: var(--waiter); }
+        .notification.loyverse { background: var(--loyverse); }
         .notification.error { background: var(--primary); }
         
         /* Auth Modal */
@@ -155,7 +161,6 @@
         /* Profile */
         .profile-header { background: linear-gradient(135deg, rgba(139,38,53,0.2) 0%, rgba(212,175,55,0.1) 100%); border-radius: 15px; padding: 30px; text-align: center; margin-bottom: 25px; }
         
-        /* Responsive */
         @media (max-width: 480px) {
             .camera-container { height: 250px; }
             .scan-target { width: 150px; height: 150px; }
@@ -166,11 +171,11 @@
 
 <div id="notification" class="notification">Success</div>
 
-<!-- Waiter POS Status Bar -->
-<div id="waiterStatusBar" class="waiter-status">
-    <div class="waiter-dot"></div>
-    <span><strong>Waiter POS Connected</strong> - Restaurant Mode</span>
-    <span style="margin-left: auto; font-size: 0.75rem; opacity: 0.8;">Live Sync</span>
+<!-- Loyverse Status Bar -->
+<div id="loyverseStatusBar" class="loyverse-status">
+    <div class="loyverse-dot"></div>
+    <span><strong>Loyverse Connected</strong> - Sync Active</span>
+    <span style="margin-left: auto; font-size: 0.75rem; opacity: 0.8;">Cloud POS</span>
 </div>
 
 <!-- Till Mode Switch -->
@@ -187,7 +192,7 @@
             <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
             <circle cx="12" cy="7" r="4"></circle>
         </svg>
-        <span id="waiterBadge" class="waiter-badge" style="display: none;">WPOS</span>
+        <span id="loyverseBadge" class="loyverse-badge" style="display: none;">LV</span>
     </button>
 </div>
 
@@ -222,10 +227,6 @@
                     <label>Username</label>
                     <input type="text" id="signupUsername" required placeholder="Choose username">
                 </div>
-                <div class="form-group">
-                    <label>Email</label>
-                    <input type="email" id="signupEmail" required placeholder="john@example.com">
-                </div>
                 <button type="submit" class="btn">Create Account</button>
             </form>
         </div>
@@ -235,7 +236,7 @@
 <!-- HOME / LOYALTY CARD -->
 <div id="home" class="section active">
     <div class="loyalty-hero">
-        <div id="waiterSyncBadge" class="waiter-sync-badge">WAITER POS</div>
+        <div id="loyverseSyncBadge" class="loyverse-sync-badge">LOYVERSE SYNC</div>
         
         <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px;">
             <div>
@@ -251,33 +252,33 @@
         <div class="qr-section">
             <div id="qrcode" class="qr-code-container"></div>
             <div class="qr-branding">
-                <span>🍽️</span>
-                <span>Show to Waiter</span>
+                <span>☕</span>
+                <span>Scan at Loyverse POS</span>
             </div>
         </div>
         
         <div class="stamp-grid" id="stampGrid"></div>
         
         <div style="background: rgba(0,0,0,0.3); height: 8px; border-radius: 10px; margin-top: 20px; overflow: hidden;">
-            <div id="progressFill" style="background: linear-gradient(90deg, var(--waiter), var(--gold)); height: 100%; width: 0%; transition: width 0.5s;"></div>
+            <div id="progressFill" style="background: linear-gradient(90deg, var(--loyverse), var(--gold)); height: 100%; width: 0%; transition: width 0.5s;"></div>
         </div>
     </div>
     
-    <h3 style="font-family: 'Playfair Display', serif; color: var(--gold); margin-bottom: 15px;">Recent Activity</h3>
+    <h3 style="font-family: 'Playfair Display', serif; color: var(--gold); margin-bottom: 15px;">Recent Loyverse Receipts</h3>
     <div id="transactionHistory">
-        <div style="text-align: center; color: #666; padding: 20px;">No transactions yet</div>
+        <div style="text-align: center; color: #666; padding: 20px;">No Loyverse transactions yet</div>
     </div>
 </div>
 
 <!-- TILL INTERFACE WITH CAMERA SCANNER -->
 <div id="tillInterface" class="section till-interface">
-    <div class="waiter-terminal-header">
+    <div class="loyverse-terminal-header">
         <span>📷</span>
-        <span>WAITER POS SCANNER</span>
+        <span>LOYVERSE SCANNER</span>
     </div>
     
-    <h2 style="font-family: 'Playfair Display', serif; color: var(--waiter); margin-bottom: 10px; margin-top: 10px;">Scan Loyalty Card</h2>
-    <div style="color: #888; font-size: 0.85rem; margin-bottom: 20px;">Point camera at customer QR code</div>
+    <h2 style="font-family: 'Playfair Display', serif; color: var(--loyverse); margin-bottom: 10px; margin-top: 10px;">Camera Scanner</h2>
+    <div style="color: #888; font-size: 0.85rem; margin-bottom: 20px;">Point at customer QR code</div>
     
     <!-- Camera Scanner -->
     <div class="camera-container" id="cameraContainer">
@@ -295,7 +296,7 @@
         </div>
         
         <div class="scan-result" id="scanResult">
-            <span style="color: var(--waiter); font-weight: bold;">QR Detected:</span>
+            <span>QR Detected:</span>
             <span id="scanResultText" style="margin-left: 10px;">...</span>
         </div>
         
@@ -308,7 +309,7 @@
     <div class="manual-entry">
         <h4>⌨️ Manual Entry</h4>
         <input type="text" id="manualUsername" placeholder="Enter customer username" style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: #1a1a1a; color: white; margin-top: 10px;">
-        <button class="btn-waiter" onclick="lookupCustomer()" style="margin-top: 10px;">Lookup Customer</button>
+        <button class="btn-loyverse" onclick="lookupCustomer()" style="margin-top: 10px;">Lookup Customer</button>
     </div>
     
     <div id="customerFound" class="customer-found">
@@ -317,47 +318,50 @@
             <div>
                 <div id="customerName" style="font-weight: bold; font-size: 1.1rem;">Customer</div>
                 <div id="customerEmail" style="font-size: 0.85rem; color: #888;">email@example.com</div>
-                <div id="customerStamps" style="color: var(--waiter); font-size: 0.8rem; margin-top: 4px;">0/10 stamps</div>
+                <div id="customerStamps" style="color: var(--loyverse); font-size: 0.8rem; margin-top: 4px;">0/10 stamps</div>
             </div>
         </div>
         
         <div id="staffDiscountBanner" class="discount-banner">
             <div style="font-size: 1.3rem; font-weight: bold; color: var(--staff);">20% Staff Discount</div>
-            <div style="font-size: 0.85rem; color: #888; margin-top: 5px;">Auto-applied in Waiter POS</div>
+            <div style="font-size: 0.85rem; color: #888; margin-top: 5px;">Applied in Loyverse</div>
         </div>
         
-        <div class="basket-panel">
-            <div style="display: flex; justify-content: space-between; margin-bottom: 10px; color: var(--waiter); font-weight: bold;">
-                <span>Waiter POS Order</span>
-                <span id="orderStatus">Active</span>
+        <div class="receipt-panel">
+            <div class="receipt-header">
+                <span>Loyverse Receipt</span>
+                <span id="receiptNumber">#0000</span>
             </div>
-            <div id="basketItems">
-                <div class="basket-item"><span>Latte x1</span><span>£3.50</span></div>
+            <div id="receiptItems">
+                <div class="receipt-item"><span>1x Latte</span><span>£3.50</span></div>
             </div>
-            <div class="basket-total">
+            <div class="receipt-total">
                 <span>Total:</span>
-                <span id="basketTotal">£3.50</span>
+                <span id="receiptTotal">£3.50</span>
+            </div>
+            <div id="loyverseDiscountRow" style="display: none; text-align: right; color: var(--staff); font-size: 0.9rem; margin-top: 5px;">
+                Staff Discount Applied
             </div>
         </div>
         
         <div class="stamp-controls">
-            <button class="btn" style="background: var(--waiter);" onclick="addWaiterStamp()">+ Add Stamp</button>
-            <button class="btn" style="background: var(--gold); color: var(--dark);" onclick="redeemViaWaiter()">☕ Free Coffee</button>
+            <button class="btn" style="background: var(--loyverse);" onclick="addLoyverseStamp()">+ Add Stamp</button>
+            <button class="btn" style="background: var(--gold); color: var(--dark);" onclick="redeemViaLoyverse()">☕ Free Coffee</button>
         </div>
         
-        <button class="btn-waiter btn-waiter-secondary" onclick="sendToWaiterPOS()">
-            Send to Waiter POS →
+        <button class="btn-loyverse btn-loyverse-secondary" onclick="printLoyverseReceipt()">
+            Print Loyverse Receipt 🖨️
         </button>
     </div>
 </div>
 
 <!-- MENU SECTION -->
 <div id="menu" class="section">
-    <h2 style="font-family: 'Playfair Display', serif; color: var(--gold); margin-bottom: 20px;">Menu</h2>
+    <h2 style="font-family: 'Playfair Display', serif; color: var(--gold); margin-bottom: 20px;">Menu - Loyverse Catalog</h2>
     
     <div id="menuContainer">
-        <div class="menu-item waiter-linked" data-price="3.50">
-            <span class="waiter-sku">WPOS-001</span>
+        <div class="menu-item loyverse-linked" data-price="3.50" data-sku="LATTE-001">
+            <span class="loyverse-sku">LV-LATTE</span>
             <div style="flex: 1;">
                 <h4>Latte</h4>
                 <p style="font-size: 0.85rem; color: #888;">Double shot with steamed milk</p>
@@ -367,8 +371,8 @@
             </div>
         </div>
         
-        <div class="menu-item waiter-linked" data-price="3.20">
-            <span class="waiter-sku">WPOS-002</span>
+        <div class="menu-item loyverse-linked" data-price="3.20" data-sku="CAP-002">
+            <span class="loyverse-sku">LV-CAPPU</span>
             <div style="flex: 1;">
                 <h4>Cappuccino</h4>
                 <p style="font-size: 0.85rem; color: #888;">Rich espresso with foam</p>
@@ -378,8 +382,8 @@
             </div>
         </div>
         
-        <div class="menu-item waiter-linked" data-price="2.80">
-            <span class="waiter-sku">WPOS-003</span>
+        <div class="menu-item loyverse-linked" data-price="2.80" data-sku="AMER-003">
+            <span class="loyverse-sku">LV-AMER</span>
             <div style="flex: 1;">
                 <h4>Americano</h4>
                 <p style="font-size: 0.85rem; color: #888;">Double shot with hot water</p>
@@ -389,6 +393,10 @@
             </div>
         </div>
     </div>
+    
+    <button class="btn-loyverse" onclick="syncToLoyverse()" style="margin-top: 20px;">
+        Sync Menu to Loyverse
+    </button>
 </div>
 
 <!-- PROFILE / SETTINGS -->
@@ -399,54 +407,43 @@
         <div style="color: #888; margin-top: 5px;" id="profileEmail">Not signed in</div>
     </div>
     
-    <!-- Waiter POS Config -->
-    <div id="waiterConfig" class="waiter-config">
-        <h3>🍽️ Waiter POS Integration</h3>
+    <!-- Loyverse Config -->
+    <div id="loyverseConfig" class="loyverse-config">
+        <h3>☕ Loyverse Integration</h3>
         
-        <div class="config-tabs">
-            <button class="config-tab active" onclick="switchConfigTab('api')">API Key</button>
-            <button class="config-tab" onclick="switchConfigTab('terminal')">Terminal</button>
-        </div>
-        
-        <div id="apiConfig">
+        <div class="config-row">
             <div class="form-group">
-                <label>Waiter POS API Key</label>
-                <input type="text" id="waiterApiKey" placeholder="wpos_sk_xxxxxxxx">
+                <label>Access Token</label>
+                <input type="text" id="loyverseToken" placeholder="lv_live_xxxxxxxx">
             </div>
             <div class="form-group">
-                <label>Restaurant ID</label>
-                <input type="text" id="waiterRestaurantId" placeholder="REST-XXXXX">
+                <label>Store ID</label>
+                <input type="text" id="loyverseStoreId" placeholder="store-xxxx">
             </div>
         </div>
         
-        <div id="terminalConfig" style="display: none;">
-            <div class="form-group">
-                <label>Terminal Name</label>
-                <input type="text" id="waiterTerminalName" value="Bar Terminal 1">
-            </div>
-            <div class="form-group">
-                <label>Table Map</label>
-                <input type="text" id="waiterTableMap" placeholder="Main Bar, Terrace">
-            </div>
+        <div class="form-group">
+            <label>POS Device Name</label>
+            <input type="text" id="loyverseDevice" value="Bar iPad 1">
         </div>
         
-        <button class="btn-waiter" onclick="connectToWaiter()">Connect to Waiter POS</button>
+        <button class="btn-loyverse" onclick="connectToLoyverse()">Connect to Loyverse</button>
+        <button class="btn-loyverse btn-loyverse-secondary" onclick="testLoyverseConnection()">Test Connection</button>
         
         <div class="sync-status">
-            <div class="sync-spinner" id="waiterSpinner"></div>
-            <span id="waiterSyncText">Ready to connect</span>
+            <div class="sync-spinner" id="loyverseSpinner"></div>
+            <span id="loyverseSyncText">Ready to connect to Loyverse API</span>
         </div>
         
-        <div style="margin-top: 15px; padding: 15px; background: rgba(0,0,0,0.3); border-radius: 8px; font-size: 0.85rem; color: #888;">
-            <strong style="color: var(--waiter);">Waiter POS Features:</strong>
-            <ul style="margin-top: 8px; padding-left: 20px; line-height: 1.6;">
-                <li>Camera-based QR scanning</li>
-                <li>Table management integration</li>
-                <li>Staff PIN authentication</li>
-                <li>Automatic loyalty stamping</li>
-                <li>Cloud sync across devices</li>
-            </ul>
-        </div>
+        <ul class="feature-list">
+            <strong style="color: var(--loyverse);">Loyverse Features:</strong>
+            <li>🔗 Cloud-based receipts sync</li>
+            <li>📷 Camera QR code scanner</li>
+            <li>👥 Customer database integration</li>
+            <li>💰 Automatic discount application</li>
+            <li>📊 Sales analytics & reporting</li>
+            <li>🖨️ Thermal printer support</li>
+        </ul>
     </div>
     
     <button id="logoutBtn" class="btn btn-secondary" style="margin-top: 20px; display: none;" onclick="handleLogout()">Sign Out</button>
@@ -473,13 +470,12 @@ const ROLES = { CUSTOMER: 'customer', STAFF: 'staff', MANAGEMENT: 'management' }
 let currentUser = null;
 let tillMode = false;
 let currentCustomer = null;
-let waiterConnected = false;
+let loyverseConnected = false;
 let videoStream = null;
-let currentFacingMode = 'environment'; // 'user' or 'environment'
+let currentFacingMode = 'environment';
 let isScanning = false;
 let scanInterval = null;
 
-// Demo Data
 const DEMO_USERS = {
     'staff1': { password: 'staff1', firstName: 'Sarah', lastName: 'Smith', email: 'sarah@junction.com', role: ROLES.STAFF, stamps: 3 },
     'customer1': { password: 'cust1', firstName: 'John', lastName: 'Doe', email: 'john@email.com', role: ROLES.CUSTOMER, stamps: 7 },
@@ -497,13 +493,12 @@ function initDemoData() {
     }
 }
 
-// Camera Functions
+// Camera Scanner Functions
 async function toggleCamera() {
     const video = document.getElementById('cameraVideo');
     const btn = document.getElementById('cameraToggle');
     
     if (videoStream) {
-        // Stop camera
         videoStream.getTracks().forEach(track => track.stop());
         videoStream = null;
         video.srcObject = null;
@@ -512,7 +507,6 @@ async function toggleCamera() {
         stopScanning();
         showNotification('Camera stopped');
     } else {
-        // Start camera
         try {
             videoStream = await navigator.mediaDevices.getUserMedia({
                 video: { 
@@ -525,10 +519,9 @@ async function toggleCamera() {
             btn.textContent = 'Stop Camera';
             btn.classList.add('stop');
             startScanning();
-            showNotification('Camera started - Point at QR code');
+            showNotification('Camera active - Scan QR code');
         } catch (err) {
-            showNotification('Camera access denied. Use manual entry.', true);
-            console.error('Camera error:', err);
+            showNotification('Camera access denied', true);
         }
     }
 }
@@ -538,13 +531,8 @@ async function switchCamera() {
         showNotification('Start camera first', true);
         return;
     }
-    
-    // Stop current stream
     videoStream.getTracks().forEach(track => track.stop());
-    
-    // Toggle facing mode
     currentFacingMode = currentFacingMode === 'environment' ? 'user' : 'environment';
-    
     try {
         videoStream = await navigator.mediaDevices.getUserMedia({
             video: { 
@@ -554,27 +542,24 @@ async function switchCamera() {
             }
         });
         document.getElementById('cameraVideo').srcObject = videoStream;
-        showNotification('Switched to ' + (currentFacingMode === 'environment' ? 'back' : 'front') + ' camera');
+        showNotification('Switched camera');
     } catch (err) {
-        showNotification('Failed to switch camera', true);
+        showNotification('Failed to switch', true);
     }
 }
 
 function startScanning() {
     if (isScanning) return;
     isScanning = true;
-    
     const video = document.getElementById('cameraVideo');
     const canvas = document.getElementById('cameraCanvas');
     const ctx = canvas.getContext('2d');
     
     scanInterval = setInterval(() => {
         if (video.readyState !== video.HAVE_ENOUGH_DATA) return;
-        
         canvas.width = video.videoWidth;
         canvas.height = video.videoHeight;
         ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-        
         const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
         const code = jsQR(imageData.data, canvas.width, canvas.height, {
             inversionAttempts: 'attemptBoth'
@@ -583,7 +568,7 @@ function startScanning() {
         if (code) {
             handleQRCodeDetected(code.data);
         }
-    }, 200); // Scan 5 times per second
+    }, 200);
 }
 
 function stopScanning() {
@@ -595,30 +580,23 @@ function stopScanning() {
 }
 
 function handleQRCodeDetected(data) {
-    // Prevent multiple scans of same code
     if (document.getElementById('scanResult').classList.contains('show')) return;
     
     try {
         const qrData = JSON.parse(data);
-        
-        // Show result
         document.getElementById('scanResult').classList.add('show');
         document.getElementById('scanResultText').textContent = qrData.user || 'Unknown';
         
-        // Process the QR code
         setTimeout(() => {
             document.getElementById('scanResult').classList.remove('show');
             if (qrData.user) {
                 loadCustomerForTill(qrData.user);
-                showNotification('Customer: ' + qrData.user, 'waiter');
+                showNotification('Found: ' + qrData.user, 'loyverse');
             }
         }, 2000);
-        
     } catch (e) {
-        // Not JSON, treat as plain username
         document.getElementById('scanResult').classList.add('show');
-        document.getElementById('scanResultText').textContent = data;
-        
+        document.getElementById('scanResultText').textContent = data.substring(0, 10);
         setTimeout(() => {
             document.getElementById('scanResult').classList.remove('show');
             loadCustomerForTill(data);
@@ -626,7 +604,7 @@ function handleQRCodeDetected(data) {
     }
 }
 
-// Auth Functions
+// Auth
 function toggleAuthModal() {
     document.getElementById('authModal').classList.toggle('active');
 }
@@ -661,7 +639,7 @@ function handleLogin(e) {
         localStorage.setItem('junction_current_user', JSON.stringify(currentUser));
         toggleAuthModal();
         updateUI();
-        showNotification('Management access granted');
+        showNotification('Admin access granted');
     } else {
         showNotification('Invalid credentials', true);
     }
@@ -673,7 +651,7 @@ function handleSignup(e) {
     const firstName = name[0];
     const lastName = name.slice(1).join(' ');
     const username = document.getElementById('signupUsername').value;
-    const email = document.getElementById('signupEmail').value;
+    const email = firstName.toLowerCase() + '@email.com';
     const password = 'password123';
     
     let users = JSON.parse(localStorage.getItem('junction_users') || '{}');
@@ -695,7 +673,7 @@ function handleSignup(e) {
 function handleLogout() {
     currentUser = null;
     localStorage.removeItem('junction_current_user');
-    if (videoStream) toggleCamera(); // Stop camera if running
+    if (videoStream) toggleCamera();
     updateUI();
     switchTab('home');
     showNotification('Signed out');
@@ -709,66 +687,78 @@ function checkAuthState() {
     }
 }
 
-// Waiter POS Functions
-function switchConfigTab(tab) {
-    document.querySelectorAll('.config-tab').forEach(t => t.classList.remove('active'));
-    event.target.classList.add('active');
+// Loyverse Integration
+function connectToLoyverse() {
+    const token = document.getElementById('loyverseToken').value;
+    const storeId = document.getElementById('loyverseStoreId').value;
     
-    document.getElementById('apiConfig').style.display = tab === 'api' ? 'block' : 'none';
-    document.getElementById('terminalConfig').style.display = tab === 'terminal' ? 'block' : 'none';
-}
-
-function connectToWaiter() {
-    const apiKey = document.getElementById('waiterApiKey').value;
-    const restaurantId = document.getElementById('waiterRestaurantId').value;
-    
-    if (!apiKey || !restaurantId) {
-        showNotification('Enter Waiter POS credentials', true);
+    if (!token || !storeId) {
+        showNotification('Enter Loyverse credentials', true);
         return;
     }
     
-    const spinner = document.getElementById('waiterSpinner');
-    const statusText = document.getElementById('waiterSyncText');
+    const spinner = document.getElementById('loyverseSpinner');
+    const statusText = document.getElementById('loyverseSyncText');
     
     spinner.classList.add('active');
-    statusText.textContent = 'Connecting to Waiter POS...';
+    statusText.textContent = 'Connecting to Loyverse...';
     
     setTimeout(() => {
-        waiterConnected = true;
-        localStorage.setItem('waiter_config', JSON.stringify({
+        loyverseConnected = true;
+        localStorage.setItem('loyverse_config', JSON.stringify({
             connected: true,
-            apiKey,
-            restaurantId,
+            token,
+            storeId,
             connectedAt: new Date().toISOString()
         }));
         
-        statusText.textContent = '✓ Connected to ' + restaurantId;
-        statusText.style.color = 'var(--waiter)';
+        statusText.textContent = '✓ Connected to ' + storeId;
+        statusText.style.color = 'var(--loyverse)';
         spinner.classList.remove('active');
         
-        updateWaiterUI();
-        showNotification('Waiter POS Connected!', 'waiter');
+        updateLoyverseUI();
+        showNotification('Loyverse Connected!', 'loyverse');
     }, 2000);
 }
 
-function updateWaiterUI() {
-    if (!waiterConnected) return;
-    
-    document.getElementById('waiterStatusBar')?.classList.add('connected');
-    document.getElementById('waiterSyncBadge')?.classList.add('show');
-    document.getElementById('waiterBadge').style.display = 'block';
-    document.getElementById('tillModeSwitch')?.classList.add('waiter-mode');
+function testLoyverseConnection() {
+    if (!loyverseConnected) {
+        showNotification('Connect first', true);
+        return;
+    }
+    showNotification('Testing Loyverse API...', 'loyverse');
+    setTimeout(() => {
+        showNotification('✓ Loyverse API ready', 'loyverse');
+    }, 1000);
+}
+
+function updateLoyverseUI() {
+    if (!loyverseConnected) return;
+    document.getElementById('loyverseStatusBar')?.classList.add('connected');
+    document.getElementById('loyverseSyncBadge')?.classList.add('show');
+    document.getElementById('loyverseBadge').style.display = 'block';
+    document.getElementById('tillModeSwitch')?.classList.add('loyverse-mode');
+}
+
+function syncToLoyverse() {
+    if (!loyverseConnected) {
+        showNotification('Connect to Loyverse first', true);
+        return;
+    }
+    showNotification('Syncing menu to Loyverse...', 'loyverse');
+    setTimeout(() => {
+        showNotification('3 items synced!', 'loyverse');
+    }, 1500);
 }
 
 // QR & Loyalty
 function generateQR() {
     if (!currentUser) return;
-    
     const container = document.getElementById('qrcode');
     container.innerHTML = '';
     
     const qrData = JSON.stringify({
-        type: 'waiter_pos_loyalty',
+        type: 'loyverse_loyalty',
         user: currentUser.username,
         venue: 'junction-marsh',
         stamps: currentUser.stamps || 0,
@@ -787,7 +777,6 @@ function generateQR() {
 
 function renderStamps() {
     if (!currentUser) return;
-    
     const grid = document.getElementById('stampGrid');
     grid.innerHTML = '';
     const stamps = currentUser.stamps || 0;
@@ -797,6 +786,7 @@ function renderStamps() {
         stamp.className = 'stamp';
         if (i < stamps) {
             stamp.classList.add('earned');
+            if (loyverseConnected) stamp.classList.add('loyverse-synced');
             stamp.innerHTML = '✓';
         } else if (i === 9) {
             stamp.classList.add('reward');
@@ -817,14 +807,13 @@ function toggleTillMode() {
     if (tillMode) {
         btn.classList.add('active');
         btn.innerHTML = '<span>📷</span><span>Scanning...</span>';
-        btn.style.background = 'var(--waiter)';
+        btn.style.background = 'var(--loyverse)';
         switchTab('till');
-        // Don't auto-start camera, let user click start
     } else {
         btn.classList.remove('active');
         btn.innerHTML = '<span>🛒</span><span>Till Mode</span>';
         btn.style.background = 'var(--staff)';
-        if (videoStream) toggleCamera(); // Stop camera
+        if (videoStream) toggleCamera();
         switchTab('home');
     }
 }
@@ -850,18 +839,20 @@ function loadCustomerForTill(username) {
     document.getElementById('customerAvatar').textContent = user.firstName[0];
     document.getElementById('customerEmail').textContent = user.email;
     document.getElementById('customerStamps').textContent = (user.stamps || 0) + '/10 stamps';
+    document.getElementById('receiptNumber').textContent = '#' + Math.floor(Math.random() * 9000 + 1000);
     
     const isStaff = user.role === ROLES.STAFF || user.role === ROLES.MANAGEMENT;
     document.getElementById('staffDiscountBanner').classList.toggle('show', isStaff);
+    document.getElementById('loyverseDiscountRow').style.display = isStaff ? 'block' : 'none';
     
     if (isStaff) {
-        document.getElementById('basketTotal').textContent = '£2.80'; // Discounted
+        document.getElementById('receiptTotal').textContent = '£2.80';
     } else {
-        document.getElementById('basketTotal').textContent = '£3.50';
+        document.getElementById('receiptTotal').textContent = '£3.50';
     }
 }
 
-function addWaiterStamp() {
+function addLoyverseStamp() {
     if (!currentCustomer) return;
     
     let users = JSON.parse(localStorage.getItem('junction_users') || '{}');
@@ -871,7 +862,7 @@ function addWaiterStamp() {
         users[username].stamps = (users[username].stamps || 0) + 1;
         localStorage.setItem('junction_users', JSON.stringify(users));
         
-        showNotification('Stamp added via Waiter POS!', 'waiter');
+        showNotification('Stamp added to Loyverse!', 'loyverse');
         loadCustomerForTill(username);
         
         if (currentUser && currentUser.username === username) {
@@ -882,14 +873,14 @@ function addWaiterStamp() {
     }
 }
 
-function redeemViaWaiter() {
+function redeemViaLoyverse() {
     if (!currentCustomer || (currentCustomer.stamps || 0) < 10) return;
     
     let users = JSON.parse(localStorage.getItem('junction_users') || '{}');
     users[currentCustomer.username].stamps = 0;
     localStorage.setItem('junction_users', JSON.stringify(users));
     
-    showNotification('☕ Free coffee redeemed!', 'waiter');
+    showNotification('☕ Free coffee via Loyverse!', 'loyverse');
     loadCustomerForTill(currentCustomer.username);
     
     if (currentUser && currentUser.username === currentCustomer.username) {
@@ -899,14 +890,14 @@ function redeemViaWaiter() {
     }
 }
 
-function sendToWaiterPOS() {
-    showNotification('Sending to Waiter POS...', 'waiter');
+function printLoyverseReceipt() {
+    showNotification('Printing Loyverse receipt...', 'loyverse');
     setTimeout(() => {
-        showNotification('✓ Order sent to kitchen display!', 'waiter');
-    }, 1000);
+        showNotification('✓ Receipt printed!', 'loyverse');
+    }, 1500);
 }
 
-// UI Updates
+// UI
 function updateUI() {
     const tillSwitch = document.getElementById('tillModeSwitch');
     const logoutBtn = document.getElementById('logoutBtn');
@@ -914,7 +905,7 @@ function updateUI() {
     const profileAvatar = document.getElementById('profileAvatar');
     const profileName = document.getElementById('profileName');
     const profileEmail = document.getElementById('profileEmail');
-    const waiterConfig = document.getElementById('waiterConfig');
+    const loyverseConfig = document.getElementById('loyverseConfig');
     
     if (currentUser) {
         const isStaff = currentUser.role === ROLES.STAFF || currentUser.role === ROLES.MANAGEMENT;
@@ -927,9 +918,9 @@ function updateUI() {
         }
         
         if (isManagement) {
-            waiterConfig.classList.add('show');
+            loyverseConfig.classList.add('show');
         } else {
-            waiterConfig.classList.remove('show');
+            loyverseConfig.classList.remove('show');
         }
         
         profileAvatar.textContent = currentUser.firstName[0];
@@ -943,7 +934,7 @@ function updateUI() {
         renderStamps();
     } else {
         tillSwitch.classList.remove('visible');
-        waiterConfig.classList.remove('show');
+        loyverseConfig.classList.remove('show');
         
         profileAvatar.textContent = 'G';
         profileName.textContent = 'Guest';
@@ -952,11 +943,10 @@ function updateUI() {
         loginPromptBtn.style.display = 'block';
     }
     
-    updateWaiterUI();
+    updateLoyverseUI();
 }
 
 function switchTab(tabName) {
-    // Stop camera when leaving till mode
     if (tabName !== 'till' && videoStream) {
         toggleCamera();
     }
@@ -975,11 +965,10 @@ function switchTab(tabName) {
 function showNotification(message, type = 'success') {
     const notif = document.getElementById('notification');
     notif.textContent = message;
-    notif.className = 'notification show' + (type === 'waiter' ? ' waiter' : type === 'error' ? ' error' : '');
+    notif.className = 'notification show' + (type === 'loyverse' ? ' loyverse' : type === 'error' ? ' error' : '');
     setTimeout(() => notif.classList.remove('show'), 3000);
 }
 
-// Cleanup on page unload
 window.addEventListener('beforeunload', () => {
     if (videoStream) {
         videoStream.getTracks().forEach(track => track.stop());
