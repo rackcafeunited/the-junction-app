@@ -4,9 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#1a1a1a">
-    <title>The Junction - SumUp Integrated</title>
+    <title>The Junction - Waiter POS Integrated</title>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
     <style>
         :root {
             --primary: #8B2635;
@@ -16,9 +17,8 @@
             --staff: #FF9800;
             --success: #4CAF50;
             --management: #9C27B0;
-            --sumup: #00D06C;  /* SumUp signature green */
-            --sumup-dark: #00B85C;
-            --sumup-blue: #0077C8;
+            --waiter: #FF5722;  /* Waiter POS Orange/Red */
+            --waiter-dark: #E64A19;
         }
         
         * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; }
@@ -27,122 +27,110 @@
         .header { position: sticky; top: 0; background: rgba(26,26,26,0.95); backdrop-filter: blur(10px); padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; z-index: 100; border-bottom: 1px solid rgba(212,175,55,0.2); }
         .header h1 { font-family: 'Playfair Display', serif; font-size: 1.3rem; color: var(--gold); }
         .icon-btn { background: none; border: none; color: var(--light); font-size: 1.3rem; cursor: pointer; position: relative; }
-        .sumup-badge { position: absolute; top: -5px; right: -5px; background: var(--sumup); color: white; font-size: 0.6rem; padding: 2px 6px; border-radius: 10px; font-weight: bold; }
+        .waiter-badge { position: absolute; top: -5px; right: -5px; background: var(--waiter); color: white; font-size: 0.6rem; padding: 2px 6px; border-radius: 10px; font-weight: bold; }
         
         .nav-bar { position: fixed; bottom: 0; left: 0; width: 100%; background: rgba(26,26,26,0.98); border-top: 1px solid rgba(212,175,55,0.2); display: flex; justify-content: space-around; padding: 10px 0; z-index: 100; }
         .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 5px; color: #666; text-decoration: none; font-size: 0.7rem; transition: color 0.3s; }
         .nav-item.active { color: var(--gold); }
-        .nav-item.sumup-connected { color: var(--sumup); }
+        .nav-item.waiter-connected { color: var(--waiter); }
         .nav-item svg { width: 24px; height: 24px; }
         
         .section { display: none; padding: 20px; animation: fadeIn 0.3s; min-height: 100vh; }
         .section.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         
-        /* SumUp Status Bar */
-        .sumup-status { background: linear-gradient(90deg, rgba(0,208,108,0.1), rgba(0,184,92,0.05)); border: 1px solid var(--sumup); border-radius: 10px; padding: 12px 15px; margin-bottom: 20px; display: none; align-items: center; gap: 10px; font-size: 0.85rem; }
-        .sumup-status.connected { display: flex; }
-        .sumup-dot { width: 8px; height: 8px; background: var(--sumup); border-radius: 50%; animation: pulse 2s infinite; box-shadow: 0 0 10px var(--sumup); }
+        /* Camera Scanner Styles */
+        .camera-container { position: relative; width: 100%; height: 300px; background: #000; border-radius: 15px; overflow: hidden; margin-bottom: 20px; border: 2px solid var(--waiter); }
+        .camera-video { width: 100%; height: 100%; object-fit: cover; }
+        .camera-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
+        .scan-line { position: absolute; width: 100%; height: 2px; background: var(--waiter); box-shadow: 0 0 10px var(--waiter); animation: scan 2s linear infinite; top: 0; }
+        .scan-target { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 200px; height: 200px; border: 2px dashed var(--waiter); border-radius: 10px; }
+        .scan-corner { position: absolute; width: 20px; height: 20px; border-color: var(--waiter); border-style: solid; }
+        .scan-corner.tl { top: -2px; left: -2px; border-width: 4px 0 0 4px; }
+        .scan-corner.tr { top: -2px; right: -2px; border-width: 4px 4px 0 0; }
+        .scan-corner.bl { bottom: -2px; left: -2px; border-width: 0 0 4px 4px; }
+        .scan-corner.br { bottom: -2px; right: -2px; border-width: 0 4px 4px 0; }
+        
+        .camera-controls { position: absolute; bottom: 15px; left: 50%; transform: translateX(-50%); display: flex; gap: 15px; z-index: 10; }
+        .camera-btn { background: rgba(0,0,0,0.7); border: 2px solid var(--waiter); color: white; padding: 10px 20px; border-radius: 25px; cursor: pointer; font-size: 0.9rem; backdrop-filter: blur(10px); }
+        .camera-btn.stop { background: var(--waiter); }
+        
+        .scan-result { background: rgba(0,0,0,0.8); position: absolute; top: 10px; left: 10px; right: 10px; padding: 10px; border-radius: 8px; border: 1px solid var(--waiter); display: none; }
+        .scan-result.show { display: block; animation: slideDown 0.3s; }
+        @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* Waiter POS Status */
+        .waiter-status { background: linear-gradient(90deg, rgba(255,87,34,0.1), rgba(255,87,34,0.05)); border: 1px solid var(--waiter); border-radius: 10px; padding: 12px 15px; margin-bottom: 20px; display: none; align-items: center; gap: 10px; font-size: 0.85rem; }
+        .waiter-status.connected { display: flex; }
+        .waiter-dot { width: 8px; height: 8px; background: var(--waiter); border-radius: 50%; animation: pulse 2s infinite; box-shadow: 0 0 10px var(--waiter); }
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
         
-        /* Loyalty Card with SumUp Branding */
+        /* Loyalty Card */
         .loyalty-hero { background: linear-gradient(135deg, var(--primary) 0%, #6b1d29 100%); border-radius: 20px; padding: 25px; margin-bottom: 20px; position: relative; overflow: hidden; }
-        .sumup-sync-badge { position: absolute; top: 15px; right: 15px; background: var(--sumup); color: white; padding: 5px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: bold; display: none; z-index: 2; }
-        .sumup-sync-badge.show { display: block; }
+        .waiter-sync-badge { position: absolute; top: 15px; right: 15px; background: var(--waiter); color: white; padding: 5px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: bold; display: none; z-index: 2; }
+        .waiter-sync-badge.show { display: block; }
         
-        .qr-section { background: white; border-radius: 15px; padding: 20px; display: flex; flex-direction: column; align-items: center; margin: 20px 0; border: 2px solid var(--sumup); box-shadow: 0 0 20px rgba(0,208,108,0.1); }
+        .qr-section { background: white; border-radius: 15px; padding: 20px; display: flex; flex-direction: column; align-items: center; margin: 20px 0; border: 2px solid var(--waiter); }
         .qr-code-container { background: white; padding: 15px; border-radius: 10px; margin-bottom: 10px; }
-        .qr-branding { display: flex; align-items: center; gap: 8px; color: var(--sumup); font-weight: bold; font-size: 0.9rem; margin-top: 5px; }
-        .transaction-ref { font-family: monospace; background: #f5f5f5; padding: 8px 15px; border-radius: 20px; margin-top: 10px; font-size: 0.8rem; color: #666; border: 1px dashed #ccc; }
+        .qr-branding { display: flex; align-items: center; gap: 8px; color: var(--waiter); font-weight: bold; font-size: 0.9rem; margin-top: 5px; }
         
         .stamp-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-top: 20px; }
-        .stamp { aspect-ratio: 1; border: 3px dashed rgba(255,255,255,0.3); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; background: rgba(0,0,0,0.2); transition: all 0.3s; }
+        .stamp { aspect-ratio: 1; border: 3px dashed rgba(255,255,255,0.3); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; background: rgba(0,0,0,0.2); }
         .stamp.earned { background: var(--gold); border-color: var(--gold); color: var(--dark); box-shadow: 0 0 15px rgba(212,175,55,0.5); }
-        .stamp.sumup-synced { border-color: var(--sumup); box-shadow: 0 0 10px rgba(0,208,108,0.3); }
         
-        /* SumUp Till Interface */
+        /* Till Interface with Waiter POS */
         .till-mode-switch { position: fixed; top: 100px; right: 20px; z-index: 99; background: var(--staff); color: white; padding: 10px 20px; border-radius: 30px; font-weight: bold; font-size: 0.85rem; cursor: pointer; display: none; align-items: center; gap: 8px; box-shadow: 0 4px 15px rgba(255,152,0,0.3); }
         .till-mode-switch.visible { display: flex; }
-        .till-mode-switch.sumup-mode { background: var(--sumup); box-shadow: 0 4px 15px rgba(0,208,108,0.3); }
+        .till-mode-switch.waiter-mode { background: var(--waiter); box-shadow: 0 4px 15px rgba(255,87,34,0.3); }
         
-        .till-interface { display: none; background: #2d2d2d; border-radius: 20px; padding: 25px; margin-bottom: 80px; border: 2px solid var(--staff); position: relative; }
-        .till-interface.sumup-mode { border-color: var(--sumup); background: linear-gradient(180deg, #1a1a1a 0%, #0a1f14 100%); }
+        .till-interface { display: none; background: #2d2d2d; border-radius: 20px; padding: 25px; margin-bottom: 20px; border: 2px solid var(--waiter); position: relative; }
         .till-interface.active { display: block; }
         
-        .sumup-terminal-header { position: absolute; top: -12px; left: 20px; background: var(--sumup); color: white; padding: 4px 15px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; display: flex; align-items: center; gap: 5px; }
+        .waiter-terminal-header { position: absolute; top: -12px; left: 20px; background: var(--waiter); color: white; padding: 4px 15px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; display: flex; align-items: center; gap: 5px; }
         
-        .scanner-area { background: #1a1a1a; border: 3px dashed var(--staff); border-radius: 15px; height: 200px; display: flex; flex-direction: column; align-items: center; justify-content: center; margin-bottom: 20px; position: relative; overflow: hidden; }
-        .scanner-area.sumup-mode { border-color: var(--sumup); background: linear-gradient(135deg, rgba(0,208,108,0.05), rgba(0,184,92,0.05)); }
-        .scanner-line { position: absolute; width: 100%; height: 2px; background: var(--staff); box-shadow: 0 0 10px var(--staff); animation: scan 2s linear infinite; }
-        .scanner-area.sumup-mode .scanner-line { background: var(--sumup); box-shadow: 0 0 15px var(--sumup); }
-        @keyframes scan { 0% { top: 0; } 50% { top: 100%; } 100% { top: 0; } }
+        .manual-entry { background: rgba(255,87,34,0.1); border: 1px solid var(--waiter); border-radius: 12px; padding: 15px; margin-top: 20px; }
+        .manual-entry h4 { color: var(--waiter); margin-bottom: 10px; }
         
-        .sumup-link-panel { background: linear-gradient(135deg, rgba(0,208,108,0.1), rgba(0,184,92,0.05)); border: 1px solid var(--sumup); border-radius: 12px; padding: 20px; margin-bottom: 20px; }
-        .sumup-link-panel h4 { color: var(--sumup); margin-bottom: 15px; display: flex; align-items: center; gap: 8px; }
-        .sumup-input { width: 100%; padding: 12px; border: 1px solid var(--sumup); background: #1a1a1a; color: white; border-radius: 8px; margin-bottom: 10px; font-family: monospace; }
-        .btn-sumup { background: var(--sumup); color: white; width: 100%; padding: 15px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 1rem; }
-        .btn-sumup-secondary { background: transparent; border: 2px solid var(--sumup); color: var(--sumup); margin-top: 10px; }
-        
-        .terminal-status { background: rgba(0,208,108,0.1); border-radius: 10px; padding: 15px; margin-bottom: 20px; border: 1px solid rgba(0,208,108,0.3); }
-        .terminal-status h4 { color: var(--sumup); margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; }
-        .terminal-id { font-family: monospace; background: rgba(0,0,0,0.3); padding: 5px 10px; border-radius: 5px; font-size: 0.85rem; }
-        
-        .amount-input { font-size: 1.5rem; text-align: center; padding: 20px; background: #1a1a1a; border: 2px solid var(--sumup); border-radius: 10px; color: white; width: 100%; margin-bottom: 15px; font-weight: bold; }
-        
-        .quick-amounts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; }
-        .quick-amount { padding: 15px; background: rgba(0,208,108,0.1); border: 1px solid var(--sumup); border-radius: 8px; color: var(--sumup); font-weight: bold; cursor: pointer; text-align: center; }
-        .quick-amount:active { background: var(--sumup); color: white; }
-        
-        .basket-panel { background: rgba(0,208,108,0.05); border: 1px solid rgba(0,208,108,0.3); border-radius: 12px; padding: 15px; margin: 15px 0; }
-        .basket-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
-        .basket-total { display: flex; justify-content: space-between; font-weight: bold; margin-top: 10px; padding-top: 10px; border-top: 2px solid var(--sumup); color: var(--sumup); }
-        
-        /* SumUp Configuration */
-        .sumup-config { background: linear-gradient(135deg, rgba(0,208,108,0.1), rgba(0,184,92,0.05)); border-radius: 15px; padding: 20px; margin-bottom: 20px; border: 1px solid var(--sumup); display: none; }
-        .sumup-config.show { display: block; }
-        .sumup-config h3 { color: var(--sumup); margin-bottom: 15px; font-family: 'Playfair Display', serif; }
-        
-        .config-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
-        
-        .merchant-info { background: #1a1a1a; border-radius: 8px; padding: 15px; margin-bottom: 15px; border: 1px solid rgba(0,208,108,0.3); }
-        .merchant-info h4 { color: var(--sumup); margin-bottom: 5px; }
-        .merchant-info p { color: #888; font-size: 0.85rem; }
-        
-        .connection-method { display: flex; gap: 10px; margin-bottom: 15px; }
-        .method-btn { flex: 1; padding: 12px; border: 1px solid rgba(255,255,255,0.2); background: transparent; color: #888; border-radius: 8px; cursor: pointer; font-size: 0.9rem; }
-        .method-btn.active { border-color: var(--sumup); color: var(--sumup); background: rgba(0,208,108,0.1); }
-        
-        .sync-status { display: flex; align-items: center; gap: 10px; font-size: 0.85rem; color: #888; margin-top: 15px; padding: 10px; background: rgba(0,0,0,0.3); border-radius: 8px; }
-        .sync-spinner { width: 16px; height: 16px; border: 2px solid var(--sumup); border-top-color: transparent; border-radius: 50%; animation: spin 1s linear infinite; display: none; }
-        .sync-spinner.active { display: block; }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        
-        /* Menu with SumUp SKU */
-        .menu-item { background: #2d2d2d; border-radius: 12px; padding: 15px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; border: 1px solid rgba(255,255,255,0.05); position: relative; }
-        .menu-item.sumup-linked { border-left: 3px solid var(--sumup); }
-        .sumup-sku { position: absolute; top: 5px; right: 10px; font-size: 0.65rem; color: var(--sumup); font-family: monospace; background: rgba(0,208,108,0.1); padding: 2px 6px; border-radius: 4px; }
-        
-        .price-display { text-align: right; }
-        .staff-discount-applied { color: var(--staff); font-size: 0.8rem; margin-top: 4px; }
-        
-        .add-to-basket { background: var(--sumup); color: white; border: none; padding: 8px 16px; border-radius: 20px; font-weight: bold; font-size: 0.85rem; cursor: pointer; margin-left: 10px; }
-        
-        /* Customer Found Panel */
-        .customer-found { display: none; background: rgba(76,175,80,0.1); border: 1px solid var(--success); border-radius: 15px; padding: 20px; margin-bottom: 20px; }
+        .customer-found { display: none; background: rgba(76,175,80,0.1); border: 1px solid var(--success); border-radius: 15px; padding: 20px; margin-top: 20px; }
         .customer-found.show { display: block; animation: slideIn 0.3s; }
         
         .customer-card { display: flex; align-items: center; gap: 15px; margin-bottom: 15px; }
-        .customer-avatar { width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, var(--sumup) 0%, var(--sumup-dark) 100%); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: bold; color: white; }
+        .customer-avatar { width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, var(--waiter) 0%, var(--waiter-dark) 100%); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: bold; color: white; }
         
-        .discount-banner { display: none; background: linear-gradient(135deg, rgba(255,152,0,0.2), rgba(255,152,0,0.1)); border: 2px solid var(--staff); border-radius: 10px; padding: 15px; text-align: center; margin-bottom: 15px; }
+        .discount-banner { background: linear-gradient(135deg, rgba(255,152,0,0.2), rgba(255,152,0,0.1)); border: 2px solid var(--staff); border-radius: 10px; padding: 15px; text-align: center; margin-bottom: 15px; display: none; }
         .discount-banner.show { display: block; }
         
+        .basket-panel { background: rgba(255,87,34,0.05); border: 1px solid rgba(255,87,34,0.3); border-radius: 12px; padding: 15px; margin: 15px 0; }
+        .basket-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .basket-total { display: flex; justify-content: space-between; font-weight: bold; margin-top: 10px; padding-top: 10px; border-top: 2px solid var(--waiter); color: var(--waiter); }
+        
         .stamp-controls { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
+        .btn-waiter { background: var(--waiter); color: white; width: 100%; padding: 15px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 1rem; }
+        .btn-waiter-secondary { background: transparent; border: 2px solid var(--waiter); color: var(--waiter); margin-top: 10px; }
+        
+        /* Waiter POS Config */
+        .waiter-config { background: linear-gradient(135deg, rgba(255,87,34,0.1), rgba(230,74,25,0.05)); border-radius: 15px; padding: 20px; margin-bottom: 20px; border: 1px solid var(--waiter); display: none; }
+        .waiter-config.show { display: block; }
+        .waiter-config h3 { color: var(--waiter); margin-bottom: 15px; font-family: 'Playfair Display', serif; }
+        
+        .config-tabs { display: flex; gap: 10px; margin-bottom: 15px; }
+        .config-tab { flex: 1; padding: 10px; border: 1px solid rgba(255,255,255,0.2); background: transparent; color: #888; border-radius: 8px; cursor: pointer; font-size: 0.85rem; }
+        .config-tab.active { border-color: var(--waiter); color: var(--waiter); background: rgba(255,87,34,0.1); }
+        
+        .sync-status { display: flex; align-items: center; gap: 10px; font-size: 0.85rem; color: #888; margin-top: 15px; padding: 10px; background: rgba(0,0,0,0.3); border-radius: 8px; }
+        .sync-spinner { width: 16px; height: 16px; border: 2px solid var(--waiter); border-top-color: transparent; border-radius: 50%; animation: spin 1s linear infinite; display: none; }
+        .sync-spinner.active { display: block; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        
+        /* Menu */
+        .menu-item { background: #2d2d2d; border-radius: 12px; padding: 15px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; border: 1px solid rgba(255,255,255,0.05); position: relative; }
+        .menu-item.waiter-linked { border-left: 3px solid var(--waiter); }
+        .waiter-sku { position: absolute; top: 5px; right: 10px; font-size: 0.65rem; color: var(--waiter); font-family: monospace; background: rgba(255,87,34,0.1); padding: 2px 6px; border-radius: 4px; }
         
         /* Notifications */
         .notification { position: fixed; top: 80px; left: 50%; transform: translateX(-50%) translateY(-100%); background: var(--success); color: white; padding: 15px 30px; border-radius: 30px; font-weight: bold; z-index: 400; opacity: 0; transition: all 0.3s; box-shadow: 0 5px 20px rgba(0,0,0,0.3); }
         .notification.show { transform: translateX(-50%) translateY(0); opacity: 1; }
-        .notification.sumup { background: var(--sumup); }
+        .notification.waiter { background: var(--waiter); }
         .notification.error { background: var(--primary); }
         
         /* Auth Modal */
@@ -163,17 +151,26 @@
         .form-group input { width: 100%; padding: 12px; border: 1px solid rgba(255,255,255,0.1); background: #1a1a1a; color: white; border-radius: 8px; }
         .btn { width: 100%; padding: 15px; background: var(--gold); color: var(--dark); border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
         .btn-secondary { background: transparent; border: 2px solid var(--gold); color: var(--gold); margin-top: 10px; }
+        
+        /* Profile */
+        .profile-header { background: linear-gradient(135deg, rgba(139,38,53,0.2) 0%, rgba(212,175,55,0.1) 100%); border-radius: 15px; padding: 30px; text-align: center; margin-bottom: 25px; }
+        
+        /* Responsive */
+        @media (max-width: 480px) {
+            .camera-container { height: 250px; }
+            .scan-target { width: 150px; height: 150px; }
+        }
     </style>
 </head>
 <body>
 
 <div id="notification" class="notification">Success</div>
 
-<!-- SumUp Status Bar -->
-<div id="sumupStatusBar" class="sumup-status">
-    <div class="sumup-dot"></div>
-    <span><strong>SumUp Connected</strong> - Terminal Ready</span>
-    <span style="margin-left: auto; font-size: 0.75rem; opacity: 0.8;">Live Payments</span>
+<!-- Waiter POS Status Bar -->
+<div id="waiterStatusBar" class="waiter-status">
+    <div class="waiter-dot"></div>
+    <span><strong>Waiter POS Connected</strong> - Restaurant Mode</span>
+    <span style="margin-left: auto; font-size: 0.75rem; opacity: 0.8;">Live Sync</span>
 </div>
 
 <!-- Till Mode Switch -->
@@ -190,7 +187,7 @@
             <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
             <circle cx="12" cy="7" r="4"></circle>
         </svg>
-        <span id="sumupBadge" class="sumup-badge" style="display: none;">SUM</span>
+        <span id="waiterBadge" class="waiter-badge" style="display: none;">WPOS</span>
     </button>
 </div>
 
@@ -225,6 +222,10 @@
                     <label>Username</label>
                     <input type="text" id="signupUsername" required placeholder="Choose username">
                 </div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="signupEmail" required placeholder="john@example.com">
+                </div>
                 <button type="submit" class="btn">Create Account</button>
             </form>
         </div>
@@ -234,7 +235,7 @@
 <!-- HOME / LOYALTY CARD -->
 <div id="home" class="section active">
     <div class="loyalty-hero">
-        <div id="sumupSyncBadge" class="sumup-sync-badge">SUMUP ENABLED</div>
+        <div id="waiterSyncBadge" class="waiter-sync-badge">WAITER POS</div>
         
         <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px;">
             <div>
@@ -247,85 +248,67 @@
             </div>
         </div>
         
-        <!-- SumUp QR Code -->
         <div class="qr-section">
             <div id="qrcode" class="qr-code-container"></div>
             <div class="qr-branding">
-                <span>💳</span>
-                <span>Scan with SumUp</span>
+                <span>🍽️</span>
+                <span>Show to Waiter</span>
             </div>
-            <div class="transaction-ref" id="sumupTransactionRef">SUMUP-TXN: Waiting...</div>
         </div>
         
         <div class="stamp-grid" id="stampGrid"></div>
         
         <div style="background: rgba(0,0,0,0.3); height: 8px; border-radius: 10px; margin-top: 20px; overflow: hidden;">
-            <div id="progressFill" style="background: linear-gradient(90deg, var(--sumup), var(--gold)); height: 100%; width: 0%; transition: width 0.5s;"></div>
+            <div id="progressFill" style="background: linear-gradient(90deg, var(--waiter), var(--gold)); height: 100%; width: 0%; transition: width 0.5s;"></div>
         </div>
     </div>
     
-    <div id="sumupInfo" style="background: linear-gradient(135deg, rgba(0,208,108,0.1), rgba(0,184,92,0.05)); border-radius: 12px; padding: 15px; margin-bottom: 20px; border: 1px solid var(--sumup); display: none;">
-        <div style="display: flex; align-items: center; gap: 10px;">
-            <span style="font-size: 1.5rem;">💳</span>
-            <div>
-                <div style="font-weight: bold; color: var(--sumup);">SumUp Pay Ready</div>
-                <div style="font-size: 0.85rem; color: #888;">Card payments + Loyalty combined</div>
-            </div>
-        </div>
-    </div>
-
-    <h3 style="font-family: 'Playfair Display', serif; color: var(--gold); margin-bottom: 15px;">Recent SumUp Transactions</h3>
+    <h3 style="font-family: 'Playfair Display', serif; color: var(--gold); margin-bottom: 15px;">Recent Activity</h3>
     <div id="transactionHistory">
-        <div style="text-align: center; color: #666; padding: 20px;">No SumUp transactions yet</div>
+        <div style="text-align: center; color: #666; padding: 20px;">No transactions yet</div>
     </div>
 </div>
 
-<!-- TILL INTERFACE (SUMUP MODE) -->
+<!-- TILL INTERFACE WITH CAMERA SCANNER -->
 <div id="tillInterface" class="section till-interface">
-    <div class="sumup-terminal-header">
-        <span>💳</span>
-        <span>SUMUP TERMINAL</span>
+    <div class="waiter-terminal-header">
+        <span>📷</span>
+        <span>WAITER POS SCANNER</span>
     </div>
     
-    <h2 style="font-family: 'Playfair Display', serif; color: var(--sumup); margin-bottom: 10px; margin-top: 10px;">SumUp Till</h2>
-    <div style="color: #888; font-size: 0.85rem; margin-bottom: 20px;">Scan loyalty or process card payment</div>
+    <h2 style="font-family: 'Playfair Display', serif; color: var(--waiter); margin-bottom: 10px; margin-top: 10px;">Scan Loyalty Card</h2>
+    <div style="color: #888; font-size: 0.85rem; margin-bottom: 20px;">Point camera at customer QR code</div>
     
-    <!-- Terminal Status -->
-    <div class="terminal-status">
-        <h4>
-            <span>Terminal Status</span>
-            <span class="terminal-id" id="terminalId">T-001</span>
-        </h4>
-        <div style="display: flex; align-items: center; gap: 8px; color: var(--sumup); font-size: 0.9rem;">
-            <span>●</span> Online & Ready
+    <!-- Camera Scanner -->
+    <div class="camera-container" id="cameraContainer">
+        <video id="cameraVideo" class="camera-video" autoplay playsinline></video>
+        <canvas id="cameraCanvas" style="display: none;"></canvas>
+        
+        <div class="camera-overlay">
+            <div class="scan-line"></div>
+            <div class="scan-target">
+                <div class="scan-corner tl"></div>
+                <div class="scan-corner tr"></div>
+                <div class="scan-corner bl"></div>
+                <div class="scan-corner br"></div>
+            </div>
+        </div>
+        
+        <div class="scan-result" id="scanResult">
+            <span style="color: var(--waiter); font-weight: bold;">QR Detected:</span>
+            <span id="scanResultText" style="margin-left: 10px;">...</span>
+        </div>
+        
+        <div class="camera-controls">
+            <button class="camera-btn" id="cameraToggle" onclick="toggleCamera()">Start Camera</button>
+            <button class="camera-btn" onclick="switchCamera()">Switch Cam</button>
         </div>
     </div>
     
-    <div class="scanner-area sumup-mode" id="scannerArea">
-        <div class="scanner-line"></div>
-        <button class="btn-sumup" style="z-index: 2; position: relative; padding: 15px 40px; border-radius: 30px;" onclick="simulateSumupScan()">
-            Scan Loyalty QR
-        </button>
-        <div style="color: #666; margin-top: 15px; font-size: 0.85rem;">Or enter amount below</div>
-    </div>
-    
-    <!-- Quick Amount Entry -->
-    <div style="margin-bottom: 20px;">
-        <input type="number" class="amount-input" id="paymentAmount" placeholder="£0.00" step="0.01" min="0">
-        <div class="quick-amounts">
-            <div class="quick-amount" onclick="setAmount(3.50)">£3.50<br><small>Latte</small></div>
-            <div class="quick-amount" onclick="setAmount(3.20)">£3.20<br><small>Cappuccino</small></div>
-            <div class="quick-amount" onclick="setAmount(2.80)">£2.80<br><small>Americano</small></div>
-        </div>
-        <button class="btn-sumup" onclick="createSumupPayment()">
-            Send to SumUp Card Reader
-        </button>
-    </div>
-    
-    <div class="sumup-link-panel">
-        <h4>🔗 Link SumUp Transaction</h4>
-        <input type="text" id="sumupTxnInput" class="sumup-input" placeholder="Enter SumUp Transaction ID">
-        <button class="btn-sumup" onclick="linkSumupTransaction()">Lookup & Add Stamp</button>
+    <div class="manual-entry">
+        <h4>⌨️ Manual Entry</h4>
+        <input type="text" id="manualUsername" placeholder="Enter customer username" style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: #1a1a1a; color: white; margin-top: 10px;">
+        <button class="btn-waiter" onclick="lookupCustomer()" style="margin-top: 10px;">Lookup Customer</button>
     </div>
     
     <div id="customerFound" class="customer-found">
@@ -334,143 +317,134 @@
             <div>
                 <div id="customerName" style="font-weight: bold; font-size: 1.1rem;">Customer</div>
                 <div id="customerEmail" style="font-size: 0.85rem; color: #888;">email@example.com</div>
-                <div id="customerStamps" style="color: var(--sumup); font-size: 0.8rem; margin-top: 4px;">0/10 stamps</div>
+                <div id="customerStamps" style="color: var(--waiter); font-size: 0.8rem; margin-top: 4px;">0/10 stamps</div>
             </div>
         </div>
         
         <div id="staffDiscountBanner" class="discount-banner">
             <div style="font-size: 1.3rem; font-weight: bold; color: var(--staff);">20% Staff Discount</div>
-            <div style="font-size: 0.85rem; color: #888; margin-top: 5px;">Will be applied to SumUp total</div>
+            <div style="font-size: 0.85rem; color: #888; margin-top: 5px;">Auto-applied in Waiter POS</div>
         </div>
         
         <div class="basket-panel">
-            <div style="display: flex; justify-content: space-between; margin-bottom: 10px; color: var(--sumup); font-weight: bold;">
-                <span>Current Sale</span>
-                <span id="saleStatus">Pending</span>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 10px; color: var(--waiter); font-weight: bold;">
+                <span>Waiter POS Order</span>
+                <span id="orderStatus">Active</span>
             </div>
-            <div id="basketItems"></div>
+            <div id="basketItems">
+                <div class="basket-item"><span>Latte x1</span><span>£3.50</span></div>
+            </div>
             <div class="basket-total">
-                <span>SumUp Total:</span>
-                <span id="basketTotal">£0.00</span>
-            </div>
-            <div id="discountRow" style="display: none; text-align: right; color: var(--staff); font-size: 0.9rem; margin-top: 5px;">
-                Staff Discount: -<span id="discountAmount">£0.00</span>
+                <span>Total:</span>
+                <span id="basketTotal">£3.50</span>
             </div>
         </div>
         
         <div class="stamp-controls">
-            <button class="btn" style="background: var(--sumup);" onclick="addSumupStamp()">+ Add Stamp</button>
-            <button class="btn" style="background: var(--gold); color: var(--dark);" onclick="redeemViaSumup()">☕ Free Coffee</button>
+            <button class="btn" style="background: var(--waiter);" onclick="addWaiterStamp()">+ Add Stamp</button>
+            <button class="btn" style="background: var(--gold); color: var(--dark);" onclick="redeemViaWaiter()">☕ Free Coffee</button>
         </div>
+        
+        <button class="btn-waiter btn-waiter-secondary" onclick="sendToWaiterPOS()">
+            Send to Waiter POS →
+        </button>
     </div>
 </div>
 
 <!-- MENU SECTION -->
 <div id="menu" class="section">
-    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px;">
-        <h2 style="font-family: 'Playfair Display', serif; color: var(--gold); flex: 1;">Menu</h2>
-        <div id="sumupMenuBadge" style="display: none; background: var(--sumup); color: white; padding: 5px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: bold;">
-            SUMUP SYNCED
-        </div>
-    </div>
+    <h2 style="font-family: 'Playfair Display', serif; color: var(--gold); margin-bottom: 20px;">Menu</h2>
     
     <div id="menuContainer">
-        <div class="menu-item sumup-linked" data-price="3.50" data-sumup-id="PROD-LATTE-001">
-            <span class="sumup-sku">SUMUP-001</span>
+        <div class="menu-item waiter-linked" data-price="3.50">
+            <span class="waiter-sku">WPOS-001</span>
             <div style="flex: 1;">
                 <h4>Latte</h4>
                 <p style="font-size: 0.85rem; color: #888;">Double shot with steamed milk</p>
             </div>
-            <div class="price-display">
+            <div style="text-align: right;">
                 <div style="color: var(--gold); font-weight: bold; font-size: 1.2rem;">£3.50</div>
-                <div class="staff-discount-applied" style="display: none;">Staff: £2.80</div>
             </div>
-            <button class="add-to-basket" onclick="addToSumupBasket('Latte', 3.50)">Add</button>
         </div>
         
-        <div class="menu-item sumup-linked" data-price="3.20" data-sumup-id="PROD-CAP-002">
-            <span class="sumup-sku">SUMUP-002</span>
+        <div class="menu-item waiter-linked" data-price="3.20">
+            <span class="waiter-sku">WPOS-002</span>
             <div style="flex: 1;">
                 <h4>Cappuccino</h4>
                 <p style="font-size: 0.85rem; color: #888;">Rich espresso with foam</p>
             </div>
-            <div class="price-display">
+            <div style="text-align: right;">
                 <div style="color: var(--gold); font-weight: bold; font-size: 1.2rem;">£3.20</div>
-                <div class="staff-discount-applied" style="display: none;">Staff: £2.56</div>
             </div>
-            <button class="add-to-basket" onclick="addToSumupBasket('Cappuccino', 3.20)">Add</button>
         </div>
         
-        <div class="menu-item sumup-linked" data-price="2.80" data-sumup-id="PROD-AMER-003">
-            <span class="sumup-sku">SUMUP-003</span>
+        <div class="menu-item waiter-linked" data-price="2.80">
+            <span class="waiter-sku">WPOS-003</span>
             <div style="flex: 1;">
                 <h4>Americano</h4>
                 <p style="font-size: 0.85rem; color: #888;">Double shot with hot water</p>
             </div>
-            <div class="price-display">
+            <div style="text-align: right;">
                 <div style="color: var(--gold); font-weight: bold; font-size: 1.2rem;">£2.80</div>
-                <div class="staff-discount-applied" style="display: none;">Staff: £2.24</div>
             </div>
-            <button class="add-to-basket" onclick="addToSumupBasket('Americano', 2.80)">Add</button>
         </div>
     </div>
 </div>
 
 <!-- PROFILE / SETTINGS -->
 <div id="profile" class="section">
-    <div style="background: linear-gradient(135deg, rgba(139,38,53,0.2) 0%, rgba(212,175,55,0.1) 100%); border-radius: 15px; padding: 30px; text-align: center; margin-bottom: 25px;">
+    <div class="profile-header">
         <div style="width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg, var(--primary) 0%, var(--gold) 100%); display: flex; align-items: center; justify-content: center; font-size: 2rem; font-weight: bold; margin: 0 auto 15px;" id="profileAvatar">G</div>
         <div style="font-family: 'Playfair Display', serif; font-size: 1.5rem; color: var(--gold);" id="profileName">Guest</div>
         <div style="color: #888; margin-top: 5px;" id="profileEmail">Not signed in</div>
     </div>
     
-    <!-- SumUp Integration Config -->
-    <div id="sumupConfig" class="sumup-config">
-        <h3>💳 SumUp Integration</h3>
+    <!-- Waiter POS Config -->
+    <div id="waiterConfig" class="waiter-config">
+        <h3>🍽️ Waiter POS Integration</h3>
         
-        <div class="connection-method">
-            <button class="method-btn active" onclick="setConnectionMethod('api')">API Key</button>
-            <button class="method-btn" onclick="setConnectionMethod('oauth')">OAuth</button>
+        <div class="config-tabs">
+            <button class="config-tab active" onclick="switchConfigTab('api')">API Key</button>
+            <button class="config-tab" onclick="switchConfigTab('terminal')">Terminal</button>
         </div>
         
-        <div class="config-grid">
+        <div id="apiConfig">
             <div class="form-group">
-                <label>SumUp API Key</label>
-                <input type="text" id="sumupApiKey" placeholder="sup_sk_xxxxxxxx">
+                <label>Waiter POS API Key</label>
+                <input type="text" id="waiterApiKey" placeholder="wpos_sk_xxxxxxxx">
             </div>
             <div class="form-group">
-                <label>Merchant Code</label>
-                <input type="text" id="sumupMerchantCode" placeholder="Mxxxx">
+                <label>Restaurant ID</label>
+                <input type="text" id="waiterRestaurantId" placeholder="REST-XXXXX">
             </div>
         </div>
         
-        <div class="form-group">
-            <label>Card Reader Terminal ID</label>
-            <input type="text" id="sumupTerminalId" value="T-001" placeholder="Enter terminal serial">
+        <div id="terminalConfig" style="display: none;">
+            <div class="form-group">
+                <label>Terminal Name</label>
+                <input type="text" id="waiterTerminalName" value="Bar Terminal 1">
+            </div>
+            <div class="form-group">
+                <label>Table Map</label>
+                <input type="text" id="waiterTableMap" placeholder="Main Bar, Terrace">
+            </div>
         </div>
         
-        <div class="merchant-info" id="merchantInfo" style="display: none;">
-            <h4>The Junction Marsh</h4>
-            <p>Merchant ID: M12345</p>
-            <p style="margin-top: 5px;">Currency: GBP (£)</p>
-        </div>
-        
-        <button class="btn-sumup" onclick="connectToSumup()">Connect to SumUp</button>
-        <button class="btn-sumup btn-sumup-secondary" onclick="testSumupConnection()">Test Connection</button>
+        <button class="btn-waiter" onclick="connectToWaiter()">Connect to Waiter POS</button>
         
         <div class="sync-status">
-            <div class="sync-spinner" id="sumupSpinner"></div>
-            <span id="sumupSyncText">Ready to connect to SumUp API</span>
+            <div class="sync-spinner" id="waiterSpinner"></div>
+            <span id="waiterSyncText">Ready to connect</span>
         </div>
         
         <div style="margin-top: 15px; padding: 15px; background: rgba(0,0,0,0.3); border-radius: 8px; font-size: 0.85rem; color: #888;">
-            <strong style="color: var(--sumup);">SumUp Features:</strong>
+            <strong style="color: var(--waiter);">Waiter POS Features:</strong>
             <ul style="margin-top: 8px; padding-left: 20px; line-height: 1.6;">
-                <li>Card reader integration (Air, Solo, 3G)</li>
-                <li>Contactless, Chip & PIN, Apple/Google Pay</li>
-                <li>Automatic loyalty stamp allocation</li>
-                <li>Staff discount on card transactions</li>
-                <li>Real-time transaction sync</li>
+                <li>Camera-based QR scanning</li>
+                <li>Table management integration</li>
+                <li>Staff PIN authentication</li>
+                <li>Automatic loyalty stamping</li>
+                <li>Cloud sync across devices</li>
             </ul>
         </div>
     </div>
@@ -499,9 +473,11 @@ const ROLES = { CUSTOMER: 'customer', STAFF: 'staff', MANAGEMENT: 'management' }
 let currentUser = null;
 let tillMode = false;
 let currentCustomer = null;
-let sumupConnected = false;
-let currentBasket = [];
-let connectionMethod = 'api';
+let waiterConnected = false;
+let videoStream = null;
+let currentFacingMode = 'environment'; // 'user' or 'environment'
+let isScanning = false;
+let scanInterval = null;
 
 // Demo Data
 const DEMO_USERS = {
@@ -519,12 +495,134 @@ function initDemoData() {
     if (!localStorage.getItem('junction_users')) {
         localStorage.setItem('junction_users', JSON.stringify(DEMO_USERS));
     }
-    if (localStorage.getItem('sumup_config')) {
-        const config = JSON.parse(localStorage.getItem('sumup_config'));
-        if (config.connected) {
-            sumupConnected = true;
-            updateSumupUI();
+}
+
+// Camera Functions
+async function toggleCamera() {
+    const video = document.getElementById('cameraVideo');
+    const btn = document.getElementById('cameraToggle');
+    
+    if (videoStream) {
+        // Stop camera
+        videoStream.getTracks().forEach(track => track.stop());
+        videoStream = null;
+        video.srcObject = null;
+        btn.textContent = 'Start Camera';
+        btn.classList.remove('stop');
+        stopScanning();
+        showNotification('Camera stopped');
+    } else {
+        // Start camera
+        try {
+            videoStream = await navigator.mediaDevices.getUserMedia({
+                video: { 
+                    facingMode: currentFacingMode,
+                    width: { ideal: 1280 },
+                    height: { ideal: 720 }
+                }
+            });
+            video.srcObject = videoStream;
+            btn.textContent = 'Stop Camera';
+            btn.classList.add('stop');
+            startScanning();
+            showNotification('Camera started - Point at QR code');
+        } catch (err) {
+            showNotification('Camera access denied. Use manual entry.', true);
+            console.error('Camera error:', err);
         }
+    }
+}
+
+async function switchCamera() {
+    if (!videoStream) {
+        showNotification('Start camera first', true);
+        return;
+    }
+    
+    // Stop current stream
+    videoStream.getTracks().forEach(track => track.stop());
+    
+    // Toggle facing mode
+    currentFacingMode = currentFacingMode === 'environment' ? 'user' : 'environment';
+    
+    try {
+        videoStream = await navigator.mediaDevices.getUserMedia({
+            video: { 
+                facingMode: currentFacingMode,
+                width: { ideal: 1280 },
+                height: { ideal: 720 }
+            }
+        });
+        document.getElementById('cameraVideo').srcObject = videoStream;
+        showNotification('Switched to ' + (currentFacingMode === 'environment' ? 'back' : 'front') + ' camera');
+    } catch (err) {
+        showNotification('Failed to switch camera', true);
+    }
+}
+
+function startScanning() {
+    if (isScanning) return;
+    isScanning = true;
+    
+    const video = document.getElementById('cameraVideo');
+    const canvas = document.getElementById('cameraCanvas');
+    const ctx = canvas.getContext('2d');
+    
+    scanInterval = setInterval(() => {
+        if (video.readyState !== video.HAVE_ENOUGH_DATA) return;
+        
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const code = jsQR(imageData.data, canvas.width, canvas.height, {
+            inversionAttempts: 'attemptBoth'
+        });
+        
+        if (code) {
+            handleQRCodeDetected(code.data);
+        }
+    }, 200); // Scan 5 times per second
+}
+
+function stopScanning() {
+    isScanning = false;
+    if (scanInterval) {
+        clearInterval(scanInterval);
+        scanInterval = null;
+    }
+}
+
+function handleQRCodeDetected(data) {
+    // Prevent multiple scans of same code
+    if (document.getElementById('scanResult').classList.contains('show')) return;
+    
+    try {
+        const qrData = JSON.parse(data);
+        
+        // Show result
+        document.getElementById('scanResult').classList.add('show');
+        document.getElementById('scanResultText').textContent = qrData.user || 'Unknown';
+        
+        // Process the QR code
+        setTimeout(() => {
+            document.getElementById('scanResult').classList.remove('show');
+            if (qrData.user) {
+                loadCustomerForTill(qrData.user);
+                showNotification('Customer: ' + qrData.user, 'waiter');
+            }
+        }, 2000);
+        
+    } catch (e) {
+        // Not JSON, treat as plain username
+        document.getElementById('scanResult').classList.add('show');
+        document.getElementById('scanResultText').textContent = data;
+        
+        setTimeout(() => {
+            document.getElementById('scanResult').classList.remove('show');
+            loadCustomerForTill(data);
+        }, 2000);
     }
 }
 
@@ -575,7 +673,7 @@ function handleSignup(e) {
     const firstName = name[0];
     const lastName = name.slice(1).join(' ');
     const username = document.getElementById('signupUsername').value;
-    const email = firstName.toLowerCase() + '@email.com';
+    const email = document.getElementById('signupEmail').value;
     const password = 'password123';
     
     let users = JSON.parse(localStorage.getItem('junction_users') || '{}');
@@ -597,6 +695,7 @@ function handleSignup(e) {
 function handleLogout() {
     currentUser = null;
     localStorage.removeItem('junction_current_user');
+    if (videoStream) toggleCamera(); // Stop camera if running
     updateUI();
     switchTab('home');
     showNotification('Signed out');
@@ -610,79 +709,55 @@ function checkAuthState() {
     }
 }
 
-// SumUp Integration Functions
-function setConnectionMethod(method) {
-    connectionMethod = method;
-    document.querySelectorAll('.method-btn').forEach(b => b.classList.remove('active'));
+// Waiter POS Functions
+function switchConfigTab(tab) {
+    document.querySelectorAll('.config-tab').forEach(t => t.classList.remove('active'));
     event.target.classList.add('active');
+    
+    document.getElementById('apiConfig').style.display = tab === 'api' ? 'block' : 'none';
+    document.getElementById('terminalConfig').style.display = tab === 'terminal' ? 'block' : 'none';
 }
 
-function connectToSumup() {
-    const apiKey = document.getElementById('sumupApiKey').value;
-    const merchantCode = document.getElementById('sumupMerchantCode').value;
-    const terminalId = document.getElementById('sumupTerminalId').value;
+function connectToWaiter() {
+    const apiKey = document.getElementById('waiterApiKey').value;
+    const restaurantId = document.getElementById('waiterRestaurantId').value;
     
-    if (!apiKey || !merchantCode) {
-        showNotification('Enter SumUp credentials', true);
+    if (!apiKey || !restaurantId) {
+        showNotification('Enter Waiter POS credentials', true);
         return;
     }
     
-    const spinner = document.getElementById('sumupSpinner');
-    const statusText = document.getElementById('sumupSyncText');
+    const spinner = document.getElementById('waiterSpinner');
+    const statusText = document.getElementById('waiterSyncText');
     
     spinner.classList.add('active');
-    statusText.textContent = 'Connecting to SumUp...';
+    statusText.textContent = 'Connecting to Waiter POS...';
     
-    // Simulate SumUp API connection
     setTimeout(() => {
-        sumupConnected = true;
-        localStorage.setItem('sumup_config', JSON.stringify({
+        waiterConnected = true;
+        localStorage.setItem('waiter_config', JSON.stringify({
             connected: true,
             apiKey,
-            merchantCode,
-            terminalId,
+            restaurantId,
             connectedAt: new Date().toISOString()
         }));
         
-        document.getElementById('merchantInfo').style.display = 'block';
-        statusText.textContent = '✓ Connected to SumUp - Terminal ' + terminalId;
-        statusText.style.color = 'var(--sumup)';
+        statusText.textContent = '✓ Connected to ' + restaurantId;
+        statusText.style.color = 'var(--waiter)';
         spinner.classList.remove('active');
         
-        updateSumupUI();
-        showNotification('SumUp Connected!', 'sumup');
+        updateWaiterUI();
+        showNotification('Waiter POS Connected!', 'waiter');
     }, 2000);
 }
 
-function testSumupConnection() {
-    if (!sumupConnected) {
-        showNotification('Connect to SumUp first', true);
-        return;
-    }
+function updateWaiterUI() {
+    if (!waiterConnected) return;
     
-    showNotification('Testing SumUp connection...', 'sumup');
-    setTimeout(() => {
-        showNotification('✓ SumUp API responding - Terminal Ready', 'sumup');
-    }, 1000);
-}
-
-function updateSumupUI() {
-    if (!sumupConnected) return;
-    
-    document.getElementById('sumupStatusBar')?.classList.add('connected');
-    document.getElementById('sumupSyncBadge')?.classList.add('show');
-    document.getElementById('sumupBadge').style.display = 'block';
-    document.getElementById('sumupMenuBadge').style.display = 'block';
-    document.getElementById('sumupInfo').style.display = 'block';
-    document.getElementById('tillModeSwitch')?.classList.add('sumup-mode');
-    document.getElementById('tillInterface')?.classList.add('sumup-mode');
-    document.getElementById('scannerArea')?.classList.add('sumup-mode');
-    
-    // Update terminal ID display
-    const config = JSON.parse(localStorage.getItem('sumup_config') || '{}');
-    if (config.terminalId) {
-        document.getElementById('terminalId').textContent = config.terminalId;
-    }
+    document.getElementById('waiterStatusBar')?.classList.add('connected');
+    document.getElementById('waiterSyncBadge')?.classList.add('show');
+    document.getElementById('waiterBadge').style.display = 'block';
+    document.getElementById('tillModeSwitch')?.classList.add('waiter-mode');
 }
 
 // QR & Loyalty
@@ -692,11 +767,8 @@ function generateQR() {
     const container = document.getElementById('qrcode');
     container.innerHTML = '';
     
-    const txnRef = 'SUMUP-' + Date.now().toString().slice(-8);
-    document.getElementById('sumupTransactionRef').textContent = 'TXN: ' + txnRef;
-    
     const qrData = JSON.stringify({
-        type: 'sumup_loyalty',
+        type: 'waiter_pos_loyalty',
         user: currentUser.username,
         venue: 'junction-marsh',
         stamps: currentUser.stamps || 0,
@@ -725,7 +797,6 @@ function renderStamps() {
         stamp.className = 'stamp';
         if (i < stamps) {
             stamp.classList.add('earned');
-            if (sumupConnected) stamp.classList.add('sumup-synced');
             stamp.innerHTML = '✓';
         } else if (i === 9) {
             stamp.classList.add('reward');
@@ -745,114 +816,33 @@ function toggleTillMode() {
     
     if (tillMode) {
         btn.classList.add('active');
-        btn.innerHTML = '<span>✓</span><span>SumUp Active</span>';
-        btn.style.background = 'var(--sumup)';
+        btn.innerHTML = '<span>📷</span><span>Scanning...</span>';
+        btn.style.background = 'var(--waiter)';
         switchTab('till');
+        // Don't auto-start camera, let user click start
     } else {
         btn.classList.remove('active');
         btn.innerHTML = '<span>🛒</span><span>Till Mode</span>';
         btn.style.background = 'var(--staff)';
+        if (videoStream) toggleCamera(); // Stop camera
         switchTab('home');
     }
 }
 
-function setAmount(amount) {
-    document.getElementById('paymentAmount').value = amount.toFixed(2);
-}
-
-function addToSumupBasket(item, price) {
-    currentBasket.push({ item, price });
-    showNotification(item + ' added to SumUp basket', 'sumup');
-    updateBasketDisplay();
-}
-
-function updateBasketDisplay() {
-    const itemsContainer = document.getElementById('basketItems');
-    const totalSpan = document.getElementById('basketTotal');
-    
-    if (currentBasket.length === 0) {
-        itemsContainer.innerHTML = '<div style="color: #666;">Basket empty</div>';
-        totalSpan.textContent = '£0.00';
-        return;
-    }
-    
-    let total = 0;
-    itemsContainer.innerHTML = currentBasket.map(b => {
-        total += b.price;
-        return `<div class="basket-item"><span>${b.item}</span><span>£${b.price.toFixed(2)}</span></div>`;
-    }).join('');
-    
-    // Apply staff discount if applicable
-    if (currentCustomer && (currentCustomer.role === ROLES.STAFF || currentCustomer.role === ROLES.MANAGEMENT)) {
-        const discount = total * 0.2;
-        total = total * 0.8;
-        document.getElementById('discountRow').style.display = 'block';
-        document.getElementById('discountAmount').textContent = '£' + discount.toFixed(2);
-    } else {
-        document.getElementById('discountRow').style.display = 'none';
-    }
-    
-    totalSpan.textContent = '£' + total.toFixed(2);
-}
-
-function createSumupPayment() {
-    const amount = document.getElementById('paymentAmount').value;
-    if (!amount || amount <= 0) {
-        showNotification('Enter amount', true);
-        return;
-    }
-    
-    showNotification('Sending to SumUp card reader...', 'sumup');
-    
-    // Simulate SumUp terminal communication
-    setTimeout(() => {
-        showNotification('✓ Payment successful on SumUp terminal!', 'sumup');
-        document.getElementById('saleStatus').textContent = 'PAID';
-        document.getElementById('saleStatus').style.color = 'var(--success)';
-        
-        // Auto-add stamp
-        if (currentCustomer) {
-            addSumupStamp();
-        }
-        
-        // Clear basket after delay
-        setTimeout(() => {
-            currentBasket = [];
-            document.getElementById('paymentAmount').value = '';
-        }, 2000);
-    }, 2000);
-}
-
-function simulateSumupScan() {
-    showNotification('Scanning SumUp loyalty...', 'sumup');
-    setTimeout(() => {
-        loadCustomerForTill('customer1');
-        // Show sample basket
-        currentBasket = [{ item: 'Latte', price: 3.50 }];
-        updateBasketDisplay();
-    }, 1000);
-}
-
-function linkSumupTransaction() {
-    const txnId = document.getElementById('sumupTxnInput').value;
-    if (!txnId) {
-        showNotification('Enter SumUp transaction ID', true);
-        return;
-    }
-    
-    showNotification('Verifying SumUp transaction...', 'sumup');
-    setTimeout(() => {
-        if (!currentCustomer) loadCustomerForTill('staff1');
-        showNotification('Transaction ' + txnId + ' linked', 'sumup');
-        addSumupStamp();
-    }, 1000);
+function lookupCustomer() {
+    const username = document.getElementById('manualUsername').value.trim();
+    if (!username) return;
+    loadCustomerForTill(username);
 }
 
 function loadCustomerForTill(username) {
     const users = JSON.parse(localStorage.getItem('junction_users') || '{}');
     const user = users[username];
     
-    if (!user) return;
+    if (!user) {
+        showNotification('Customer not found', true);
+        return;
+    }
     
     currentCustomer = { username, ...user };
     document.getElementById('customerFound').classList.add('show');
@@ -863,9 +853,15 @@ function loadCustomerForTill(username) {
     
     const isStaff = user.role === ROLES.STAFF || user.role === ROLES.MANAGEMENT;
     document.getElementById('staffDiscountBanner').classList.toggle('show', isStaff);
+    
+    if (isStaff) {
+        document.getElementById('basketTotal').textContent = '£2.80'; // Discounted
+    } else {
+        document.getElementById('basketTotal').textContent = '£3.50';
+    }
 }
 
-function addSumupStamp() {
+function addWaiterStamp() {
     if (!currentCustomer) return;
     
     let users = JSON.parse(localStorage.getItem('junction_users') || '{}');
@@ -875,7 +871,7 @@ function addSumupStamp() {
         users[username].stamps = (users[username].stamps || 0) + 1;
         localStorage.setItem('junction_users', JSON.stringify(users));
         
-        showNotification('Stamp added via SumUp!', 'sumup');
+        showNotification('Stamp added via Waiter POS!', 'waiter');
         loadCustomerForTill(username);
         
         if (currentUser && currentUser.username === username) {
@@ -886,14 +882,14 @@ function addSumupStamp() {
     }
 }
 
-function redeemViaSumup() {
+function redeemViaWaiter() {
     if (!currentCustomer || (currentCustomer.stamps || 0) < 10) return;
     
     let users = JSON.parse(localStorage.getItem('junction_users') || '{}');
     users[currentCustomer.username].stamps = 0;
     localStorage.setItem('junction_users', JSON.stringify(users));
     
-    showNotification('☕ Free coffee redeemed!', 'sumup');
+    showNotification('☕ Free coffee redeemed!', 'waiter');
     loadCustomerForTill(currentCustomer.username);
     
     if (currentUser && currentUser.username === currentCustomer.username) {
@@ -901,6 +897,13 @@ function redeemViaSumup() {
         localStorage.setItem('junction_current_user', JSON.stringify(currentUser));
         renderStamps();
     }
+}
+
+function sendToWaiterPOS() {
+    showNotification('Sending to Waiter POS...', 'waiter');
+    setTimeout(() => {
+        showNotification('✓ Order sent to kitchen display!', 'waiter');
+    }, 1000);
 }
 
 // UI Updates
@@ -911,7 +914,7 @@ function updateUI() {
     const profileAvatar = document.getElementById('profileAvatar');
     const profileName = document.getElementById('profileName');
     const profileEmail = document.getElementById('profileEmail');
-    const sumupConfig = document.getElementById('sumupConfig');
+    const waiterConfig = document.getElementById('waiterConfig');
     
     if (currentUser) {
         const isStaff = currentUser.role === ROLES.STAFF || currentUser.role === ROLES.MANAGEMENT;
@@ -919,16 +922,14 @@ function updateUI() {
         
         if (isStaff) {
             tillSwitch.classList.add('visible');
-            document.querySelectorAll('.staff-discount-applied').forEach(el => el.style.display = 'block');
         } else {
             tillSwitch.classList.remove('visible');
-            document.querySelectorAll('.staff-discount-applied').forEach(el => el.style.display = 'none');
         }
         
         if (isManagement) {
-            sumupConfig.classList.add('show');
+            waiterConfig.classList.add('show');
         } else {
-            sumupConfig.classList.remove('show');
+            waiterConfig.classList.remove('show');
         }
         
         profileAvatar.textContent = currentUser.firstName[0];
@@ -942,7 +943,7 @@ function updateUI() {
         renderStamps();
     } else {
         tillSwitch.classList.remove('visible');
-        sumupConfig.classList.remove('show');
+        waiterConfig.classList.remove('show');
         
         profileAvatar.textContent = 'G';
         profileName.textContent = 'Guest';
@@ -951,10 +952,15 @@ function updateUI() {
         loginPromptBtn.style.display = 'block';
     }
     
-    updateSumupUI();
+    updateWaiterUI();
 }
 
 function switchTab(tabName) {
+    // Stop camera when leaving till mode
+    if (tabName !== 'till' && videoStream) {
+        toggleCamera();
+    }
+    
     document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
     document.getElementById(tabName === 'till' ? 'tillInterface' : tabName).classList.add('active');
     
@@ -969,9 +975,16 @@ function switchTab(tabName) {
 function showNotification(message, type = 'success') {
     const notif = document.getElementById('notification');
     notif.textContent = message;
-    notif.className = 'notification show' + (type === 'sumup' ? ' sumup' : type === 'error' ? ' error' : '');
+    notif.className = 'notification show' + (type === 'waiter' ? ' waiter' : type === 'error' ? ' error' : '');
     setTimeout(() => notif.classList.remove('show'), 3000);
 }
+
+// Cleanup on page unload
+window.addEventListener('beforeunload', () => {
+    if (videoStream) {
+        videoStream.getTracks().forEach(track => track.stop());
+    }
+});
 </script>
 
 </body>
