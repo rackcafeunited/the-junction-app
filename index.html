@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#1a1a1a">
-    <title>The Junction - EposNow Integrated</title>
+    <title>The Junction - Lolly Integrated</title>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
@@ -16,7 +16,8 @@
             --staff: #FF9800;
             --success: #4CAF50;
             --management: #9C27B0;
-            --epos: #00BCD4;
+            --lolly: #00C853;  /* Lolly green */
+            --lolly-blue: #0091EA;
         }
         
         * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; }
@@ -24,117 +25,104 @@
         
         .header { position: sticky; top: 0; background: rgba(26,26,26,0.95); backdrop-filter: blur(10px); padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; z-index: 100; border-bottom: 1px solid rgba(212,175,55,0.2); }
         .header h1 { font-family: 'Playfair Display', serif; font-size: 1.3rem; color: var(--gold); }
-        .icon-btn { background: none; border: none; color: var(--light); font-size: 1.3rem; cursor: pointer; padding: 5px; position: relative; }
-        .badge { position: absolute; top: -5px; right: -5px; background: var(--epos); color: white; font-size: 0.6rem; padding: 2px 6px; border-radius: 10px; }
+        .icon-btn { background: none; border: none; color: var(--light); font-size: 1.3rem; cursor: pointer; position: relative; }
+        .lolly-badge { position: absolute; top: -5px; right: -5px; background: var(--lolly); color: white; font-size: 0.6rem; padding: 2px 6px; border-radius: 10px; font-weight: bold; }
         
         .nav-bar { position: fixed; bottom: 0; left: 0; width: 100%; background: rgba(26,26,26,0.98); border-top: 1px solid rgba(212,175,55,0.2); display: flex; justify-content: space-around; padding: 10px 0; z-index: 100; }
         .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 5px; color: #666; text-decoration: none; font-size: 0.7rem; transition: color 0.3s; }
         .nav-item.active { color: var(--gold); }
+        .nav-item.lolly-connected { color: var(--lolly); }
         .nav-item svg { width: 24px; height: 24px; }
-        .nav-item.epos-connected { color: var(--epos); }
         
         .section { display: none; padding: 20px; animation: fadeIn 0.3s; min-height: 100vh; }
         .section.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         
-        /* EposNow Status Bar */
-        .epos-status { background: linear-gradient(90deg, rgba(0,188,212,0.1), rgba(0,188,212,0.05)); border: 1px solid var(--epos); border-radius: 10px; padding: 12px 15px; margin-bottom: 20px; display: none; align-items: center; gap: 10px; font-size: 0.85rem; }
-        .epos-status.connected { display: flex; }
-        .epos-status.error { border-color: var(--primary); background: rgba(139,38,53,0.1); }
-        .epos-dot { width: 8px; height: 8px; background: var(--epos); border-radius: 50%; animation: pulse 2s infinite; }
+        /* Lolly Status Bar */
+        .lolly-status { background: linear-gradient(90deg, rgba(0,200,83,0.1), rgba(0,145,234,0.05)); border: 1px solid var(--lolly); border-radius: 10px; padding: 12px 15px; margin-bottom: 20px; display: none; align-items: center; gap: 10px; font-size: 0.85rem; }
+        .lolly-status.connected { display: flex; }
+        .lolly-dot { width: 8px; height: 8px; background: var(--lolly); border-radius: 50%; animation: pulse 2s infinite; box-shadow: 0 0 10px var(--lolly); }
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
         
-        /* Loyalty Card */
+        .provider-tabs { display: flex; gap: 10px; margin-bottom: 20px; }
+        .provider-tab { flex: 1; padding: 10px; border-radius: 8px; border: 2px solid rgba(255,255,255,0.1); background: transparent; color: #888; cursor: pointer; font-weight: 600; font-size: 0.9rem; }
+        .provider-tab.active { border-color: var(--lolly); color: var(--lolly); background: rgba(0,200,83,0.1); }
+        .provider-tab.epos-tab.active { border-color: var(--epos); color: var(--epos); background: rgba(0,188,212,0.1); }
+        
+        /* Loyalty Card with Lolly Branding */
         .loyalty-hero { background: linear-gradient(135deg, var(--primary) 0%, #6b1d29 100%); border-radius: 20px; padding: 25px; margin-bottom: 20px; position: relative; overflow: hidden; }
-        .loyalty-hero::before { content: ''; position: absolute; top: -50%; right: -20%; width: 200px; height: 200px; background: rgba(212,175,55,0.1); border-radius: 50%; }
+        .lolly-sync-badge { position: absolute; top: 15px; right: 15px; background: var(--lolly); color: white; padding: 5px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: bold; display: none; z-index: 2; }
+        .lolly-sync-badge.show { display: block; }
         
-        .epos-sync-badge { position: absolute; top: 15px; right: 15px; background: var(--epos); color: white; padding: 5px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: bold; z-index: 2; display: none; }
-        .epos-sync-badge.show { display: block; }
+        .qr-section { background: white; border-radius: 15px; padding: 20px; display: flex; flex-direction: column; align-items: center; margin: 20px 0; border: 2px solid var(--lolly); box-shadow: 0 0 20px rgba(0,200,83,0.1); }
+        .qr-code-container { background: white; padding: 15px; border-radius: 10px; margin-bottom: 10px; }
+        .qr-branding { display: flex; align-items: center; gap: 8px; color: var(--lolly); font-weight: bold; font-size: 0.9rem; margin-top: 5px; }
+        .transaction-ref { font-family: monospace; background: #f5f5f5; padding: 8px 15px; border-radius: 20px; margin-top: 10px; font-size: 0.8rem; color: #666; border: 1px dashed #ccc; }
         
-        .qr-section { background: white; border-radius: 15px; padding: 20px; display: flex; flex-direction: column; align-items: center; margin: 20px 0; }
-        .qr-code-container { background: white; padding: 15px; border-radius: 10px; margin-bottom: 15px; border: 2px solid #f0f0f0; }
-        .qr-meta { color: #333; font-size: 0.85rem; text-align: center; }
-        .transaction-id { font-family: monospace; background: #f5f5f5; padding: 5px 10px; border-radius: 5px; margin-top: 10px; font-size: 0.8rem; color: #666; }
-        
-        .stamp-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-top: 20px; position: relative; z-index: 1; }
-        .stamp { aspect-ratio: 1; border: 3px dashed rgba(255,255,255,0.3); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; background: rgba(0,0,0,0.2); }
+        .stamp-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-top: 20px; }
+        .stamp { aspect-ratio: 1; border: 3px dashed rgba(255,255,255,0.3); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; background: rgba(0,0,0,0.2); transition: all 0.3s; }
         .stamp.earned { background: var(--gold); border-color: var(--gold); color: var(--dark); box-shadow: 0 0 15px rgba(212,175,55,0.5); }
-        .stamp.epos-synced { border-color: var(--epos); color: var(--epos); }
+        .stamp.lolly-synced { border-color: var(--lolly); box-shadow: 0 0 10px rgba(0,200,83,0.3); }
         
-        /* Till Interface - EPOS Mode */
+        /* Lolly Till Interface */
         .till-mode-switch { position: fixed; top: 100px; right: 20px; z-index: 99; background: var(--staff); color: white; padding: 10px 20px; border-radius: 30px; font-weight: bold; font-size: 0.85rem; cursor: pointer; display: none; align-items: center; gap: 8px; box-shadow: 0 4px 15px rgba(255,152,0,0.3); }
         .till-mode-switch.visible { display: flex; }
-        .till-mode-switch.epos-connected { background: var(--epos); box-shadow: 0 4px 15px rgba(0,188,212,0.3); }
+        .till-mode-switch.lolly-mode { background: var(--lolly); box-shadow: 0 4px 15px rgba(0,200,83,0.3); }
         
         .till-interface { display: none; background: #2d2d2d; border-radius: 20px; padding: 25px; margin-bottom: 80px; border: 2px solid var(--staff); position: relative; }
-        .till-interface.epos-mode { border-color: var(--epos); box-shadow: 0 0 30px rgba(0,188,212,0.1); }
+        .till-interface.lolly-mode { border-color: var(--lolly); background: linear-gradient(180deg, #1a1a1a 0%, #0d1f0d 100%); }
         .till-interface.active { display: block; }
         
-        .epos-terminal-id { position: absolute; top: -12px; left: 20px; background: var(--epos); color: white; padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: bold; }
+        .lolly-terminal-header { position: absolute; top: -12px; left: 20px; background: var(--lolly); color: white; padding: 4px 15px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; display: flex; align-items: center; gap: 5px; }
         
         .scanner-area { background: #1a1a1a; border: 3px dashed var(--staff); border-radius: 15px; height: 200px; display: flex; flex-direction: column; align-items: center; justify-content: center; margin-bottom: 20px; position: relative; overflow: hidden; }
-        .scanner-area.epos-connected { border-color: var(--epos); }
+        .scanner-area.lolly-mode { border-color: var(--lolly); background: linear-gradient(135deg, rgba(0,200,83,0.05), rgba(0,145,234,0.05)); }
         .scanner-line { position: absolute; width: 100%; height: 2px; background: var(--staff); box-shadow: 0 0 10px var(--staff); animation: scan 2s linear infinite; }
-        .scanner-area.epos-connected .scanner-line { background: var(--epos); box-shadow: 0 0 10px var(--epos); }
-        @keyframes scan { 0% { top: 0; } 50% { top: 100%; } 100% { top: 0; } }
+        .scanner-area.lolly-mode .scanner-line { background: var(--lolly); box-shadow: 0 0 15px var(--lolly); }
         
-        .scan-btn { background: var(--staff); color: white; padding: 15px 40px; border: none; border-radius: 30px; font-weight: bold; font-size: 1.1rem; cursor: pointer; z-index: 2; position: relative; }
-        .scan-btn.epos { background: var(--epos); }
+        .lolly-link-panel { background: linear-gradient(135deg, rgba(0,200,83,0.1), rgba(0,145,234,0.05)); border: 1px solid var(--lolly); border-radius: 12px; padding: 20px; margin-bottom: 20px; }
+        .lolly-link-panel h4 { color: var(--lolly); margin-bottom: 15px; display: flex; align-items: center; gap: 8px; }
+        .lolly-input { width: 100%; padding: 12px; border: 1px solid var(--lolly); background: #1a1a1a; color: white; border-radius: 8px; margin-bottom: 10px; font-family: monospace; }
+        .btn-lolly { background: var(--lolly); color: white; width: 100%; padding: 15px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        .btn-lolly-secondary { background: transparent; border: 2px solid var(--lolly); color: var(--lolly); margin-top: 10px; }
         
-        .epos-transaction-link { background: rgba(0,188,212,0.1); border: 1px solid var(--epos); border-radius: 10px; padding: 15px; margin-bottom: 20px; }
-        .epos-transaction-link h4 { color: var(--epos); margin-bottom: 10px; font-size: 0.95rem; display: flex; align-items: center; gap: 5px; }
-        .epos-input { width: 100%; padding: 12px; border: 1px solid var(--epos); background: #1a1a1a; color: white; border-radius: 8px; margin-bottom: 10px; font-family: monospace; }
+        .basket-panel { background: rgba(0,200,83,0.05); border: 1px solid rgba(0,200,83,0.3); border-radius: 12px; padding: 15px; margin: 15px 0; }
+        .basket-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .basket-total { display: flex; justify-content: space-between; font-weight: bold; margin-top: 10px; padding-top: 10px; border-top: 2px solid var(--lolly); color: var(--lolly); }
         
-        .customer-found { display: none; background: rgba(76,175,80,0.1); border: 1px solid var(--success); border-radius: 15px; padding: 20px; margin-bottom: 20px; }
-        .customer-found.show { display: block; animation: slideIn 0.3s; }
+        /* Lolly Configuration */
+        .lolly-config { background: linear-gradient(135deg, rgba(0,200,83,0.1), rgba(0,145,234,0.05)); border-radius: 15px; padding: 20px; margin-bottom: 20px; border: 1px solid var(--lolly); display: none; }
+        .lolly-config.show { display: block; }
+        .lolly-config h3 { color: var(--lolly); margin-bottom: 15px; font-family: 'Playfair Display', serif; }
+        .config-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
         
-        .customer-card { display: flex; align-items: center; gap: 15px; margin-bottom: 15px; }
-        .customer-avatar { width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, var(--primary) 0%, var(--gold) 100%); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: bold; }
+        .venue-selector { background: #1a1a1a; border: 1px solid var(--lolly); border-radius: 8px; padding: 10px; color: white; width: 100%; margin-bottom: 15px; }
         
-        .discount-applied { background: linear-gradient(135deg, rgba(255,152,0,0.2), rgba(255,152,0,0.1)); border: 2px solid var(--staff); border-radius: 10px; padding: 15px; margin: 15px 0; text-align: center; display: none; }
-        .discount-applied.show { display: block; animation: pulse 0.5s; }
-        .discount-amount { font-size: 1.5rem; font-weight: bold; color: var(--staff); }
+        .sync-status { display: flex; align-items: center; gap: 10px; font-size: 0.85rem; color: #888; margin-top: 15px; padding: 10px; background: rgba(0,0,0,0.3); border-radius: 8px; }
+        .sync-spinner { width: 16px; height: 16px; border: 2px solid var(--lolly); border-top-color: transparent; border-radius: 50%; animation: spin 1s linear infinite; display: none; }
+        .sync-spinner.active { display: block; }
+        @keyframes spin { to { transform: rotate(360deg); } }
         
-        .stamp-controls { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
-        .btn-add-stamp { background: var(--success); color: white; }
-        .btn-redeem { background: var(--gold); color: var(--dark); }
-        .btn-epos-sync { background: var(--epos); color: white; margin-top: 10px; }
-        
-        /* EposNow Config Panel */
-        .epos-config { background: #2d2d2d; border-radius: 15px; padding: 20px; margin-bottom: 20px; border: 1px solid var(--epos); display: none; }
-        .epos-config.show { display: block; }
-        .epos-config h3 { color: var(--epos); margin-bottom: 15px; font-family: 'Playfair Display', serif; }
-        .config-status { display: inline-block; padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; margin-left: 10px; }
-        .config-status.connected { background: rgba(0,188,212,0.2); color: var(--epos); }
-        .config-status.disconnected { background: rgba(255,255,255,0.1); color: #999; }
-        
-        .sync-log { background: #1a1a1a; border-radius: 8px; padding: 15px; margin-top: 15px; max-height: 200px; overflow-y: auto; font-family: monospace; font-size: 0.8rem; }
-        .sync-log-entry { padding: 5px 0; border-bottom: 1px solid rgba(255,255,255,0.05); color: #888; }
-        .sync-log-entry.success { color: var(--success); }
-        .sync-log-entry.error { color: #f44336; }
-        .sync-log-entry.epos { color: var(--epos); }
-        
-        /* Menu with Epos SKU */
+        /* Menu Items with Lolly SKU */
         .menu-item { background: #2d2d2d; border-radius: 12px; padding: 15px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; border: 1px solid rgba(255,255,255,0.05); position: relative; }
-        .menu-item.epos-linked { border-left: 3px solid var(--epos); }
-        .epos-sku { position: absolute; top: 5px; right: 10px; font-size: 0.65rem; color: var(--epos); font-family: monospace; background: rgba(0,188,212,0.1); padding: 2px 6px; border-radius: 4px; }
+        .menu-item.lolly-linked { border-left: 3px solid var(--lolly); }
+        .lolly-sku { position: absolute; top: 5px; right: 10px; font-size: 0.65rem; color: var(--lolly); font-family: monospace; background: rgba(0,200,83,0.1); padding: 2px 6px; border-radius: 4px; }
         
-        .price-container { text-align: right; }
-        .original-price { text-decoration: line-through; color: #666; font-size: 0.9rem; }
-        .staff-price { color: var(--staff); font-weight: bold; font-size: 1.2rem; }
+        .price-display { text-align: right; }
+        .staff-discount-applied { color: var(--staff); font-size: 0.8rem; margin-top: 4px; }
         
-        /* Modal */
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 200; justify-content: center; align-items: center; padding: 20px; }
-        .modal.active { display: flex; }
-        .modal-content { background: #2d2d2d; border-radius: 15px; padding: 30px; max-width: 400px; width: 100%; text-align: center; border: 1px solid rgba(212,175,55,0.3); }
+        /* Notifications */
+        .notification { position: fixed; top: 80px; left: 50%; transform: translateX(-50%) translateY(-100%); background: var(--success); color: white; padding: 15px 30px; border-radius: 30px; font-weight: bold; z-index: 400; opacity: 0; transition: all 0.3s; box-shadow: 0 5px 20px rgba(0,0,0,0.3); }
+        .notification.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+        .notification.lolly { background: var(--lolly); }
         
-        /* Auth */
+        /* Auth Modal */
         .auth-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 300; justify-content: flex-end; align-items: flex-end; }
         .auth-modal.active { display: flex; }
         .auth-container { background: linear-gradient(180deg, #2d2d2d 0%, #1a1a1a 100%); border-radius: 30px 30px 0 0; width: 100%; max-width: 500px; max-height: 90vh; overflow-y: auto; position: relative; animation: slideUp 0.4s; border-top: 2px solid var(--gold); }
         @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-        .close-auth { position: absolute; top: 20px; right: 20px; background: none; border: none; color: #666; font-size: 1.5rem; cursor: pointer; width: 40px; height: 40px; }
-        .auth-logo { font-family: 'Playfair Display', serif; font-size: 2rem; color: var(--gold); margin-bottom: 10px; text-align: center; padding-top: 30px; }
+        .close-auth { position: absolute; top: 20px; right: 20px; background: none; border: none; color: #666; font-size: 1.5rem; cursor: pointer; }
+        .auth-logo { font-family: 'Playfair Display', serif; font-size: 2rem; color: var(--gold); text-align: center; padding-top: 30px; }
         .auth-tabs { display: flex; padding: 0 30px; border-bottom: 1px solid rgba(255,255,255,0.1); }
         .auth-tab { flex: 1; background: none; border: none; color: #666; padding: 15px; font-size: 1rem; cursor: pointer; font-weight: 600; }
         .auth-tab.active { color: var(--gold); border-bottom: 2px solid var(--gold); }
@@ -143,27 +131,20 @@
         .auth-form.active { display: block; }
         .form-group { margin-bottom: 15px; }
         .form-group label { display: block; margin-bottom: 5px; font-size: 0.85rem; color: #888; }
-        .form-group input { width: 100%; padding: 12px; border: 1px solid rgba(255,255,255,0.1); background: #1a1a1a; color: var(--light); border-radius: 8px; font-size: 1rem; }
-        .btn { width: 100%; padding: 15px; background: var(--gold); color: var(--dark); border: none; border-radius: 8px; font-weight: bold; font-size: 1rem; cursor: pointer; }
+        .form-group input { width: 100%; padding: 12px; border: 1px solid rgba(255,255,255,0.1); background: #1a1a1a; color: white; border-radius: 8px; }
+        .btn { width: 100%; padding: 15px; background: var(--gold); color: var(--dark); border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
         .btn-secondary { background: transparent; border: 2px solid var(--gold); color: var(--gold); margin-top: 10px; }
-        .btn-epos { background: var(--epos); color: white; }
-        
-        /* Notification */
-        .notification { position: fixed; top: 80px; left: 50%; transform: translateX(-50%) translateY(-100%); background: var(--success); color: white; padding: 15px 30px; border-radius: 30px; font-weight: bold; z-index: 400; opacity: 0; transition: all 0.3s; box-shadow: 0 5px 20px rgba(0,0,0,0.3); }
-        .notification.show { transform: translateX(-50%) translateY(0); opacity: 1; }
-        .notification.error { background: var(--primary); }
-        .notification.epos { background: var(--epos); }
     </style>
 </head>
 <body>
 
 <div id="notification" class="notification">Success</div>
 
-<!-- EposNow Status Bar -->
-<div id="eposStatusBar" class="epos-status">
-    <div class="epos-dot"></div>
-    <span>EposNow Connected: Terminal <span id="terminalId">#001</span></span>
-    <span style="margin-left: auto; font-size: 0.75rem; opacity: 0.8;">Sync Active</span>
+<!-- Lolly Status Bar -->
+<div id="lollyStatusBar" class="lolly-status">
+    <div class="lolly-dot"></div>
+    <span><strong>Lolly Connected</strong> - Venue: The Junction Marsh</span>
+    <span style="margin-left: auto; font-size: 0.75rem; opacity: 0.8;">Real-time Sync</span>
 </div>
 
 <!-- Till Mode Switch -->
@@ -175,14 +156,13 @@
 <!-- Header -->
 <div class="header">
     <h1>The Junction</h1>
-    <div style="display: flex; gap: 15px; align-items: center;">
-        <button class="icon-btn" onclick="toggleAuthModal()" id="userBtn">
-            <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                <circle cx="12" cy="7" r="4"></circle>
-            </svg>
-        </button>
-    </div>
+    <button class="icon-btn" onclick="toggleAuthModal()" id="userBtn">
+        <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+            <circle cx="12" cy="7" r="4"></circle>
+        </svg>
+        <span id="lollyBadge" class="lolly-badge" style="display: none;">LOL</span>
+    </button>
 </div>
 
 <!-- Auth Modal -->
@@ -206,7 +186,6 @@
                 </div>
                 <button type="submit" class="btn">Sign In</button>
                 <button type="button" class="btn btn-secondary" onclick="fillDemoCreds('staff1')">Demo: Staff</button>
-                <button type="button" class="btn btn-secondary" onclick="fillDemoCreds('customer1')" style="margin-top: 5px;">Demo: Customer</button>
             </form>
             <form id="signupForm" class="auth-form" onsubmit="handleSignup(event)">
                 <div class="form-group">
@@ -221,22 +200,26 @@
                     <label>Email</label>
                     <input type="email" id="signupEmail" required placeholder="john@example.com">
                 </div>
-                <div class="form-group">
-                    <label>Password</label>
-                    <input type="password" id="signupPassword" required placeholder="Create password">
-                </div>
                 <button type="submit" class="btn">Create Account</button>
             </form>
         </div>
     </div>
 </div>
 
-<!-- HOME / LOYALTY SECTION -->
+<!-- HOME / LOYALTY CARD -->
 <div id="home" class="section active">
+    <!-- Provider Selection (Management Only) -->
+    <div id="providerSelection" style="display: none; margin-bottom: 20px;">
+        <div class="provider-tabs">
+            <button class="provider-tab active" onclick="switchProvider('lolly')">Lolly</button>
+            <button class="provider-tab" onclick="switchProvider('generic')">Generic</button>
+        </div>
+    </div>
+
     <div class="loyalty-hero">
-        <div id="eposSyncBadge" class="epos-sync-badge">EPOS SYNCED</div>
+        <div id="lollySyncBadge" class="lolly-sync-badge">SYNCED WITH LOLLY</div>
         
-        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; position: relative; z-index: 1;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px;">
             <div>
                 <div style="font-family: 'Playfair Display', serif; font-size: 1.5rem; color: var(--gold);">The Junction Rewards</div>
                 <div style="font-size: 0.9rem; opacity: 0.9; margin-top: 5px;">Buy 9 coffees, get the 10th FREE</div>
@@ -247,176 +230,180 @@
             </div>
         </div>
         
-        <!-- QR Code for EposNow Scanning -->
+        <!-- Lolly QR Code -->
         <div class="qr-section">
             <div id="qrcode" class="qr-code-container"></div>
-            <div class="qr-meta">Scan at EposNow Terminal</div>
-            <div class="transaction-id" id="qrTransactionId">TXN: Ready to scan</div>
+            <div class="qr-branding">
+                <span>🔗</span>
+                <span>Scan with Lolly Till</span>
+            </div>
+            <div class="transaction-ref" id="lollyTransactionRef">LOLLY-TXN: Waiting...</div>
         </div>
         
         <div class="stamp-grid" id="stampGrid"></div>
         
         <div style="background: rgba(0,0,0,0.3); height: 8px; border-radius: 10px; margin-top: 20px; overflow: hidden;">
-            <div id="progressFill" style="background: linear-gradient(90deg, var(--gold), #FFD700); height: 100%; width: 0%; transition: width 0.5s;"></div>
+            <div id="progressFill" style="background: linear-gradient(90deg, var(--lolly), var(--gold)); height: 100%; width: 0%; transition: width 0.5s;"></div>
         </div>
     </div>
     
-    <h3 style="font-family: 'Playfair Display', serif; color: var(--gold); margin-bottom: 15px;">Transaction History</h3>
+    <div id="lollyApiInfo" style="background: linear-gradient(135deg, rgba(0,200,83,0.1), rgba(0,145,234,0.05)); border-radius: 12px; padding: 15px; margin-bottom: 20px; border: 1px solid var(--lolly); display: none;">
+        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+            <span style="font-size: 1.5rem;">💳</span>
+            <div>
+                <div style="font-weight: bold; color: var(--lolly);">Lolly Pay Integration</div>
+                <div style="font-size: 0.85rem; color: #888;">Stamps auto-sync with Lolly transactions</div>
+            </div>
+        </div>
+    </div>
+
+    <h3 style="font-family: 'Playfair Display', serif; color: var(--gold); margin-bottom: 15px;">Recent Activity</h3>
     <div id="transactionHistory">
-        <div style="text-align: center; color: #666; padding: 20px;">No transactions yet</div>
+        <div style="text-align: center; color: #666; padding: 20px;">No Lolly transactions yet</div>
     </div>
 </div>
 
-<!-- TILL INTERFACE (EPOSNOW INTEGRATED) -->
+<!-- TILL INTERFACE (LOLLY MODE) -->
 <div id="tillInterface" class="section till-interface">
-    <div class="epos-terminal-id">EPOS TERMINAL #001</div>
+    <div class="lolly-terminal-header">
+        <span>⚡</span>
+        <span>LOLLY TERMINAL</span>
+    </div>
     
-    <h2 style="font-family: 'Playfair Display', serif; color: var(--epos); margin-bottom: 10px; margin-top: 10px;">EposNow Till</h2>
-    <div style="color: #888; font-size: 0.85rem; margin-bottom: 20px;">Scan customer QR code to apply loyalty</div>
+    <h2 style="font-family: 'Playfair Display', serif; color: var(--lolly); margin-bottom: 10px; margin-top: 10px;">Lolly Scan & Pay</h2>
+    <div style="color: #888; font-size: 0.85rem; margin-bottom: 20px;">Scan customer QR to link loyalty</div>
     
-    <div class="scanner-area" id="scannerArea">
+    <div class="scanner-area lolly-mode" id="scannerArea">
         <div class="scanner-line"></div>
-        <button class="scan-btn epos" onclick="simulateEposScan()">Scan Loyalty Card</button>
-        <div style="color: #666; margin-top: 15px; font-size: 0.85rem;">Align QR code with scanner</div>
+        <button class="btn-lolly" style="z-index: 2; position: relative; padding: 15px 40px; border-radius: 30px;" onclick="simulateLollyScan()">
+            Scan Lolly QR
+        </button>
+        <div style="color: #666; margin-top: 15px; font-size: 0.85rem;">Or enter Lolly Transaction ID</div>
     </div>
     
-    <!-- Manual EposNow Transaction Entry -->
-    <div class="epos-transaction-link">
-        <h4>🔗 Link EposNow Transaction</h4>
-        <input type="text" id="eposTransactionId" class="epos-input" placeholder="Enter EposNow Receipt ID (e.g., TXN-78432)">
-        <button class="btn btn-epos-sync" onclick="linkEposTransaction()">Lookup Transaction</button>
+    <div class="lolly-link-panel">
+        <h4>🔗 Link Lolly Transaction</h4>
+        <input type="text" id="lollyTxnInput" class="lolly-input" placeholder="e.g., LOLLY-8834221">
+        <button class="btn-lolly" onclick="linkLollyTransaction()">Lookup Lolly Receipt</button>
+        <button class="btn-lolly btn-lolly-secondary" onclick="refreshLollyMenu()">Refresh Menu from Lolly</button>
     </div>
     
-    <!-- Customer Found Panel -->
     <div id="customerFound" class="customer-found">
         <div class="customer-card">
-            <div class="customer-avatar" id="customerAvatar">?</div>
+            <div class="customer-avatar" id="customerAvatar" style="background: linear-gradient(135deg, var(--lolly) 0%, var(--lolly-blue) 100%);">?</div>
             <div>
                 <div id="customerName" style="font-weight: bold; font-size: 1.1rem;">Customer</div>
-                <div id="customerType" style="font-size: 0.85rem; color: #888;">Type</div>
+                <div id="customerEmail" style="font-size: 0.85rem; color: #888;">email@example.com</div>
             </div>
         </div>
         
-        <div id="staffDiscountPanel" class="discount-applied">
-            <div style="font-size: 0.85rem; color: #888; margin-bottom: 5px;">👨‍💼 Staff Discount Applied</div>
-            <div class="discount-amount">20% OFF</div>
-            <div style="font-size: 0.75rem; color: var(--staff); margin-top: 5px;">EposNow will auto-apply discount</div>
+        <div id="staffDiscountBanner" style="display: none; background: linear-gradient(135deg, rgba(255,152,0,0.2), rgba(255,152,0,0.1)); border: 2px solid var(--staff); border-radius: 10px; padding: 15px; text-align: center; margin-bottom: 15px;">
+            <div style="font-size: 1.3rem; font-weight: bold; color: var(--staff);">20% Staff Discount</div>
+            <div style="font-size: 0.85rem; color: #888; margin-top: 5px;">Applied via Lolly discount engine</div>
         </div>
         
-        <div style="background: rgba(0,0,0,0.3); border-radius: 10px; padding: 15px; margin-bottom: 15px;">
-            <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
-                <span>Current Stamps:</span>
-                <span id="currentStamps" style="font-weight: bold; color: var(--gold);">0/10</span>
+        <div class="basket-panel">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 10px; color: var(--lolly); font-weight: bold;">
+                <span>Lolly Basket</span>
+                <span id="basketItemCount">0 items</span>
             </div>
-            <div style="display: flex; justify-content: space-between;">
-                <span>EposNow Status:</span>
-                <span style="color: var(--epos); font-weight: bold;">Linked</span>
+            <div id="basketItems">
+                <!-- Populated by Lolly API -->
             </div>
-        </div>
-        
-        <!-- EposNow Basket Integration -->
-        <div style="background: rgba(0,188,212,0.1); border-radius: 10px; padding: 15px; margin-bottom: 15px; border: 1px solid var(--epos);">
-            <h4 style="color: var(--epos); margin-bottom: 10px; font-size: 0.95rem;">🛒 Current Basket</h4>
-            <div id="eposBasketItems" style="font-size: 0.9rem; color: #ccc;">
-                <div style="display: flex; justify-content: space-between; padding: 5px 0;">
-                    <span>Latte x1</span>
-                    <span>£3.50</span>
-                </div>
-                <div style="border-top: 1px solid rgba(255,255,255,0.1); margin-top: 10px; padding-top: 10px; display: flex; justify-content: space-between; font-weight: bold;">
-                    <span>Total:</span>
-                    <span id="basketTotal">£3.50</span>
-                </div>
-                <div id="discountRow" style="display: none; color: var(--staff); font-size: 0.85rem; margin-top: 5px; text-align: right;">
-                    Staff Discount: -£0.70
-                </div>
+            <div class="basket-total">
+                <span>Total Due:</span>
+                <span id="basketTotal">£0.00</span>
+            </div>
+            <div id="discountRow" style="display: none; text-align: right; color: var(--staff); font-size: 0.9rem; margin-top: 5px;">
+                Staff Discount: -<span id="discountAmount">£0.00</span>
             </div>
         </div>
         
         <div class="stamp-controls">
-            <button class="btn btn-add-stamp" onclick="addStampToEposTransaction()">+ Add Stamp</button>
-            <button class="btn btn-redeem" onclick="redeemViaEpos()">☕ Redeem Free</button>
+            <button class="btn" style="background: var(--lolly);" onclick="addLollyStamp()">+ Add Lolly Stamp</button>
+            <button class="btn" style="background: var(--gold); color: var(--dark);" onclick="redeemViaLolly()">☕ Free Coffee</button>
         </div>
+        
+        <button class="btn-lolly btn-lolly-secondary" style="margin-top: 10px;" onclick="processLollyPayment()">
+            Process Lolly Payment →
+        </button>
     </div>
 </div>
 
 <!-- MENU SECTION -->
 <div id="menu" class="section">
-    <div id="staffBanner" style="display: none; background: linear-gradient(135deg, rgba(255,152,0,0.2), rgba(255,152,0,0.1)); border: 1px solid var(--staff); border-radius: 12px; padding: 15px; margin-bottom: 20px; text-align: center;">
-        <div style="color: var(--staff); font-weight: bold; font-size: 1.1rem;">🎉 Staff Discount Active</div>
-        <div style="color: #888; font-size: 0.9rem; margin-top: 5px;">20% off at till (EposNow integrated)</div>
+    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px;">
+        <h2 style="font-family: 'Playfair Display', serif; color: var(--gold); flex: 1;">Menu</h2>
+        <div id="lollyMenuBadge" style="display: none; background: var(--lolly); color: white; padding: 5px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: bold;">
+            LOLLY SYNCED
+        </div>
     </div>
     
-    <h2 style="font-family: 'Playfair Display', serif; color: var(--gold); margin-bottom: 20px;">Menu</h2>
-    
-    <div style="margin-bottom: 25px;">
-        <h3 style="color: var(--gold); margin-bottom: 15px; border-bottom: 2px solid var(--primary); display: inline-block; padding-bottom: 5px;">Coffee</h3>
-        
-        <div class="menu-item epos-linked" data-price="3.50" data-epos-id="SKU-COFFEE-001">
-            <span class="epos-sku">EPOS: 001</span>
+    <div id="menuContainer">
+        <!-- Lolly products will be loaded here -->
+        <div class="menu-item lolly-linked" data-price="3.50" data-lolly-id="PROD-001">
+            <span class="lolly-sku">LOLLY-001</span>
             <div style="flex: 1;">
                 <h4>Latte</h4>
                 <p style="font-size: 0.85rem; color: #888;">Double shot with steamed milk</p>
             </div>
-            <div class="price-container">
-                <div class="current-price" style="color: var(--gold); font-weight: bold; font-size: 1.2rem;">£3.50</div>
-            </div>
-        </div>
-        
-        <div class="menu-item epos-linked" data-price="3.20" data-epos-id="SKU-COFFEE-002">
-            <span class="epos-sku">EPOS: 002</span>
-            <div style="flex: 1;">
-                <h4>Cappuccino</h4>
-                <p style="font-size: 0.85rem; color: #888;">Rich espresso with foam</p>
-            </div>
-            <div class="price-container">
-                <div class="current-price" style="color: var(--gold); font-weight: bold; font-size: 1.2rem;">£3.20</div>
-            </div>
-        </div>
-        
-        <div class="menu-item epos-linked" data-price="2.80" data-epos-id="SKU-COFFEE-003">
-            <span class="epos-sku">EPOS: 003</span>
-            <div style="flex: 1;">
-                <h4>Americano</h4>
-                <p style="font-size: 0.85rem; color: #888;">Double shot with hot water</p>
-            </div>
-            <div class="price-container">
-                <div class="current-price" style="color: var(--gold); font-weight: bold; font-size: 1.2rem;">£2.80</div>
+            <div class="price-display">
+                <div style="color: var(--gold); font-weight: bold; font-size: 1.2rem;">£3.50</div>
+                <div class="staff-discount-applied" style="display: none;">Staff: £2.80</div>
             </div>
         </div>
     </div>
+    
+    <button onclick="syncMenuToLolly()" class="btn-lolly" style="margin-top: 20px;">
+        Sync Menu to Lolly Catalog
+    </button>
 </div>
 
-<!-- PROFILE SECTION -->
+<!-- PROFILE / SETTINGS -->
 <div id="profile" class="section">
     <div style="background: linear-gradient(135deg, rgba(139,38,53,0.2) 0%, rgba(212,175,55,0.1) 100%); border-radius: 15px; padding: 30px; text-align: center; margin-bottom: 25px;">
         <div style="width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg, var(--primary) 0%, var(--gold) 100%); display: flex; align-items: center; justify-content: center; font-size: 2rem; font-weight: bold; margin: 0 auto 15px;" id="profileAvatar">G</div>
         <div style="font-family: 'Playfair Display', serif; font-size: 1.5rem; color: var(--gold);" id="profileName">Guest</div>
         <div style="color: #888; margin-top: 5px;" id="profileEmail">Not signed in</div>
-        <div id="roleBadge" style="margin-top: 10px;"></div>
     </div>
     
-    <!-- EPOSNOW CONFIGURATION (Management Only) -->
-    <div id="eposConfigPanel" class="epos-config">
-        <h3>EposNow Integration <span class="config-status disconnected" id="eposConfigStatus">Disconnected</span></h3>
+    <!-- Lolly Integration Config -->
+    <div id="lollyConfig" class="lolly-config">
+        <h3>🔗 Lolly Integration Settings</h3>
         
-        <div class="form-group">
-            <label>EposNow API Key</label>
-            <input type="text" id="eposApiKey" placeholder="Enter your EposNow API key">
-        </div>
-        <div class="form-group">
-            <label>Store ID</label>
-            <input type="text" id="eposStoreId" placeholder="Your EposNow Store ID">
-        </div>
-        <div class="form-group">
-            <label>Terminal ID</label>
-            <input type="text" id="eposTerminalId" value="001">
+        <div class="config-grid">
+            <div class="form-group">
+                <label>Lolly API Key</label>
+                <input type="text" id="lollyApiKey" placeholder="lol_live_xxxxxxxx">
+            </div>
+            <div class="form-group">
+                <label>Merchant ID</label>
+                <input type="text" id="lollyMerchantId" placeholder="M-XXXXX">
+            </div>
         </div>
         
-        <button class="btn btn-epos" onclick="connectEposNow()">Connect to EposNow</button>
-        <button class="btn btn-secondary" onclick="syncProductsToEpos()" style="margin-top: 10px;">Sync Menu to EposNow</button>
+        <label style="color: #888; font-size: 0.9rem; display: block; margin-bottom: 8px;">Select Venue</label>
+        <select class="venue-selector" id="lollyVenue">
+            <option value="">Loading venues...</option>
+            <option value="venue-001">The Junction - Marsh (Main)</option>
+            <option value="venue-002">The Junction - Greenhead Park</option>
+        </select>
         
-        <div class="sync-log" id="syncLog">
-            <div class="sync-log-entry">Ready to connect...</div>
+        <button class="btn-lolly" onclick="connectToLolly()">Connect to Lolly</button>
+        
+        <div class="sync-status">
+            <div class="sync-spinner" id="lollySpinner"></div>
+            <span id="lollySyncText">Ready to connect to Lolly API</span>
+        </div>
+        
+        <div style="margin-top: 15px; padding: 15px; background: rgba(0,0,0,0.3); border-radius: 8px; font-size: 0.85rem; color: #888;">
+            <strong style="color: var(--lolly);">Lolly Features:</strong>
+            <ul style="margin-top: 8px; padding-left: 20px; line-height: 1.6;">
+                <li>Real-time product catalog sync</li>
+                <li>Automatic stamp allocation per transaction</li>
+                <li>Staff discount auto-application</li>
+                <li>QR code payment integration</li>
+            </ul>
         </div>
     </div>
     
@@ -424,7 +411,6 @@
     <button id="loginPromptBtn" class="btn" style="margin-top: 20px;" onclick="toggleAuthModal()">Sign In</button>
 </div>
 
-<!-- NAVIGATION -->
 <nav class="nav-bar">
     <a href="#" class="nav-item active" onclick="switchTab('home')">
         <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
@@ -445,8 +431,8 @@ const ROLES = { CUSTOMER: 'customer', STAFF: 'staff', MANAGEMENT: 'management' }
 let currentUser = null;
 let tillMode = false;
 let currentCustomer = null;
-let eposConnected = false;
-let currentTransactionId = null;
+let lollyConnected = false;
+let currentProvider = 'lolly'; // 'lolly' or 'generic'
 
 // Demo Data
 const DEMO_USERS = {
@@ -455,7 +441,6 @@ const DEMO_USERS = {
     'manager1': { password: 'mgr1', firstName: 'Mike', lastName: 'Johnson', email: 'mike@junction.com', role: ROLES.MANAGEMENT, stamps: 0 }
 };
 
-// Initialize
 document.addEventListener('DOMContentLoaded', () => {
     checkAuthState();
     initDemoData();
@@ -464,15 +449,6 @@ document.addEventListener('DOMContentLoaded', () => {
 function initDemoData() {
     if (!localStorage.getItem('junction_users')) {
         localStorage.setItem('junction_users', JSON.stringify(DEMO_USERS));
-    }
-    if (!localStorage.getItem('epos_config')) {
-        localStorage.setItem('epos_config', JSON.stringify({ connected: false }));
-    } else {
-        const config = JSON.parse(localStorage.getItem('epos_config'));
-        if (config.connected) {
-            eposConnected = true;
-            updateEposUI();
-        }
     }
 }
 
@@ -505,13 +481,13 @@ function handleLogin(e) {
         localStorage.setItem('junction_current_user', JSON.stringify(currentUser));
         toggleAuthModal();
         updateUI();
-        showNotification('Welcome back, ' + currentUser.firstName);
+        showNotification('Welcome, ' + currentUser.firstName);
     } else if (username === 'Junction' && password === 'TheJunctionMarsh') {
         currentUser = { username: 'Junction', role: ROLES.MANAGEMENT, firstName: 'Admin', email: 'admin@junction.com', stamps: 0 };
         localStorage.setItem('junction_current_user', JSON.stringify(currentUser));
         toggleAuthModal();
         updateUI();
-        showNotification('Admin access granted');
+        showNotification('Management access granted');
     } else {
         showNotification('Invalid credentials', true);
     }
@@ -558,113 +534,148 @@ function checkAuthState() {
     }
 }
 
-// EposNow Integration Functions
-function connectEposNow() {
-    const apiKey = document.getElementById('eposApiKey').value;
-    const storeId = document.getElementById('eposStoreId').value;
-    const terminalId = document.getElementById('eposTerminalId').value;
+// Lolly Integration Functions
+function connectToLolly() {
+    const apiKey = document.getElementById('lollyApiKey').value;
+    const merchantId = document.getElementById('lollyMerchantId').value;
+    const venue = document.getElementById('lollyVenue').value;
     
-    if (!apiKey || !storeId) {
-        showNotification('Enter API credentials', true);
+    if (!apiKey || !merchantId) {
+        showNotification('Enter Lolly API credentials', true);
         return;
     }
     
-    // Simulate API connection
-    logSync('Connecting to EposNow API...', 'epos');
+    const spinner = document.getElementById('lollySpinner');
+    const statusText = document.getElementById('lollySyncText');
     
+    spinner.classList.add('active');
+    statusText.textContent = 'Connecting to Lolly API...';
+    
+    // Simulate Lolly API connection
     setTimeout(() => {
-        eposConnected = true;
-        localStorage.setItem('epos_config', JSON.stringify({
+        lollyConnected = true;
+        localStorage.setItem('lolly_config', JSON.stringify({
             connected: true,
             apiKey,
-            storeId,
-            terminalId,
+            merchantId,
+            venue,
             connectedAt: new Date().toISOString()
         }));
         
-        logSync('✓ Connected to Store #' + storeId, 'success');
-        logSync('✓ Terminal #' + terminalId + ' registered', 'success');
-        logSync('✓ Loyalty integration active', 'success');
+        statusText.textContent = '✓ Connected to Lolly - Venue: ' + venue;
+        statusText.style.color = 'var(--lolly)';
+        spinner.classList.remove('active');
         
-        updateEposUI();
-        showNotification('EposNow Connected!');
-    }, 1500);
+        updateLollyUI();
+        showNotification('Lolly Connected!', 'lolly');
+        
+        // Simulate fetching menu
+        fetchLollyMenu();
+    }, 2000);
 }
 
-function updateEposUI() {
-    if (!eposConnected) return;
+function updateLollyUI() {
+    if (!lollyConnected) return;
     
-    document.getElementById('eposStatusBar')?.classList.add('connected');
-    document.getElementById('eposConfigStatus').textContent = 'Connected';
-    document.getElementById('eposConfigStatus').className = 'config-status connected';
-    document.getElementById('tillModeSwitch')?.classList.add('epos-connected');
-    document.getElementById('scannerArea')?.classList.add('epos-connected');
-    document.getElementById('tillInterface')?.classList.add('epos-mode');
+    document.getElementById('lollyStatusBar')?.classList.add('connected');
+    document.getElementById('lollySyncBadge')?.classList.add('show');
+    document.getElementById('lollyBadge').style.display = 'block';
+    document.getElementById('lollyMenuBadge').style.display = 'block';
+    document.getElementById('lollyApiInfo').style.display = 'block';
+    document.getElementById('tillModeSwitch')?.classList.add('lolly-mode');
+    document.getElementById('tillInterface')?.classList.add('lolly-mode');
+    document.getElementById('scannerArea')?.classList.add('lolly-mode');
     
-    if (currentUser) {
-        document.getElementById('eposSyncBadge')?.classList.add('show');
-    }
-}
-
-function logSync(message, type) {
-    const log = document.getElementById('syncLog');
-    const entry = document.createElement('div');
-    entry.className = 'sync-log-entry ' + type;
-    entry.textContent = new Date().toLocaleTimeString() + ' - ' + message;
-    log.insertBefore(entry, log.firstChild);
-}
-
-function syncProductsToEpos() {
-    if (!eposConnected) {
-        showNotification('Connect to EposNow first', true);
-        return;
-    }
-    
-    logSync('Syncing products to EposNow...', 'epos');
-    
-    const items = [
-        { name: 'Latte', price: 3.50, sku: '001', category: 'Coffee' },
-        { name: 'Cappuccino', price: 3.20, sku: '002', category: 'Coffee' },
-        { name: 'Americano', price: 2.80, sku: '003', category: 'Coffee' }
-    ];
-    
-    let count = 0;
-    items.forEach((item, idx) => {
-        setTimeout(() => {
-            logSync(`Syncing ${item.name} (SKU: ${item.sku})...`, 'epos');
-            count++;
-            if (count === items.length) {
-                logSync(`✓ ${items.length} products synced successfully`, 'success');
-                showNotification('Menu synced to EposNow!');
-            }
-        }, idx * 500);
+    // Update nav item
+    document.querySelectorAll('.nav-item').forEach(item => {
+        if (item.getAttribute('onclick')?.includes('home')) {
+            item.classList.add('lolly-connected');
+        }
     });
 }
 
-// QR & Loyalty Functions
+function fetchLollyMenu() {
+    // Simulate fetching from Lolly Catalog API
+    showNotification('Fetching Lolly menu...', 'lolly');
+    
+    setTimeout(() => {
+        const lollyProducts = [
+            { id: 'PROD-001', name: 'Latte', price: 3.50, sku: 'LOLLY-001', category: 'Coffee' },
+            { id: 'PROD-002', name: 'Cappuccino', price: 3.20, sku: 'LOLLY-002', category: 'Coffee' },
+            { id: 'PROD-003', name: 'Americano', price: 2.80, sku: 'LOLLY-003', category: 'Coffee' },
+            { id: 'PROD-004', name: 'Espresso', price: 2.20, sku: 'LOLLY-004', category: 'Coffee' }
+        ];
+        
+        renderLollyMenu(lollyProducts);
+        showNotification('Menu synced with Lolly!', 'lolly');
+    }, 1500);
+}
+
+function renderLollyMenu(products) {
+    const container = document.getElementById('menuContainer');
+    container.innerHTML = '';
+    
+    products.forEach(product => {
+        const item = document.createElement('div');
+        item.className = 'menu-item lolly-linked';
+        item.setAttribute('data-price', product.price);
+        item.setAttribute('data-lolly-id', product.id);
+        
+        item.innerHTML = `
+            <span class="lolly-sku">${product.sku}</span>
+            <div style="flex: 1;">
+                <h4>${product.name}</h4>
+                <p style="font-size: 0.85rem; color: #888;">${product.category}</p>
+            </div>
+            <div class="price-display">
+                <div style="color: var(--gold); font-weight: bold; font-size: 1.2rem;">£${product.price.toFixed(2)}</div>
+                <div class="staff-discount-applied" style="display: none;">Staff: £${(product.price * 0.8).toFixed(2)}</div>
+            </div>
+        `;
+        container.appendChild(item);
+    });
+}
+
+function syncMenuToLolly() {
+    if (!lollyConnected) {
+        showNotification('Connect to Lolly first', true);
+        return;
+    }
+    
+    showNotification('Syncing menu to Lolly Catalog...', 'lolly');
+    setTimeout(() => {
+        showNotification('4 items synced to Lolly!', 'lolly');
+    }, 1500);
+}
+
+function refreshLollyMenu() {
+    fetchLollyMenu();
+}
+
+// QR & Loyalty
 function generateQR() {
     if (!currentUser) return;
     
     const container = document.getElementById('qrcode');
     container.innerHTML = '';
     
-    // Create transaction reference for EposNow
-    currentTransactionId = 'TXN-' + Date.now().toString().slice(-8);
-    document.getElementById('qrTransactionId').textContent = 'TXN: ' + currentTransactionId;
+    const txnRef = 'LOLLY-' + Date.now().toString().slice(-8);
+    document.getElementById('lollyTransactionRef').textContent = 'TXN: ' + txnRef;
     
     const qrData = JSON.stringify({
-        u: currentUser.username,
-        r: currentUser.role,
-        t: currentTransactionId,
-        s: currentUser.stamps || 0
+        type: 'lolly_loyalty',
+        user: currentUser.username,
+        venue: 'junction-marsh',
+        stamps: currentUser.stamps || 0,
+        timestamp: Date.now()
     });
     
     new QRCode(container, {
         text: qrData,
         width: 128,
         height: 128,
-        colorDark: "#000000",
-        colorLight: "#ffffff",
+        colorDark: '#000000',
+        colorLight: '#ffffff',
         correctLevel: QRCode.CorrectLevel.H
     });
 }
@@ -681,7 +692,7 @@ function renderStamps() {
         stamp.className = 'stamp';
         if (i < stamps) {
             stamp.classList.add('earned');
-            if (eposConnected) stamp.classList.add('epos-synced');
+            if (lollyConnected) stamp.classList.add('lolly-synced');
             stamp.innerHTML = '✓';
         } else if (i === 9) {
             stamp.classList.add('reward');
@@ -701,48 +712,48 @@ function toggleTillMode() {
     
     if (tillMode) {
         btn.classList.add('active');
-        btn.innerHTML = '<span>✓</span><span>Active</span>';
+        btn.innerHTML = '<span>✓</span><span>Lolly Active</span>';
+        btn.style.background = 'var(--lolly)';
         switchTab('till');
     } else {
         btn.classList.remove('active');
         btn.innerHTML = '<span>🛒</span><span>Till Mode</span>';
+        btn.style.background = 'var(--staff)';
         switchTab('home');
     }
 }
 
-function simulateEposScan() {
-    showNotification('Scanning loyalty card...');
-    
+function simulateLollyScan() {
+    showNotification('Scanning Lolly QR...', 'lolly');
     setTimeout(() => {
-        // Simulate finding customer1
         loadCustomerForTill('customer1');
+        // Simulate Lolly basket
+        document.getElementById('basketItems').innerHTML = `
+            <div class="basket-item">
+                <span>Latte x1</span>
+                <span>£3.50</span>
+            </div>
+            <div class="basket-item">
+                <span>Croissant x1</span>
+                <span>£2.20</span>
+            </div>
+        `;
+        document.getElementById('basketItemCount').textContent = '2 items';
+        document.getElementById('basketTotal').textContent = '£5.70';
     }, 1000);
 }
 
-function linkEposTransaction() {
-    const txnId = document.getElementById('eposTransactionId').value;
+function linkLollyTransaction() {
+    const txnId = document.getElementById('lollyTxnInput').value;
     if (!txnId) {
-        showNotification('Enter transaction ID', true);
+        showNotification('Enter Lolly Transaction ID', true);
         return;
     }
     
-    showNotification('Looking up EposNow transaction...');
-    
-    // In real implementation, this would query EposNow API
+    showNotification('Linking to Lolly...', 'lolly');
     setTimeout(() => {
-        if (!currentCustomer) {
-            // If no customer scanned, simulate loading one
-            loadCustomerForTill('staff1');
-        }
-        showNotification('Transaction linked: ' + txnId);
-        currentTransactionId = txnId;
-        
-        // Auto-apply staff discount if applicable
-        if (currentCustomer && (currentCustomer.role === ROLES.STAFF || currentCustomer.role === ROLES.MANAGEMENT)) {
-            document.getElementById('staffDiscountPanel').classList.add('show');
-            document.getElementById('discountRow').style.display = 'flex';
-            document.getElementById('basketTotal').textContent = '£2.80'; // Discounted price
-        }
+        if (!currentCustomer) loadCustomerForTill('staff1');
+        showNotification('Linked to ' + txnId, 'lolly');
     }, 800);
 }
 
@@ -750,39 +761,25 @@ function loadCustomerForTill(username) {
     const users = JSON.parse(localStorage.getItem('junction_users') || '{}');
     const user = users[username];
     
-    if (!user) {
-        showNotification('Customer not found', true);
-        return;
-    }
+    if (!user) return;
     
     currentCustomer = { username, ...user };
     document.getElementById('customerFound').classList.add('show');
     document.getElementById('customerName').textContent = user.firstName + ' ' + user.lastName;
     document.getElementById('customerAvatar').textContent = user.firstName[0];
-    document.getElementById('customerType').textContent = user.role.toUpperCase();
-    document.getElementById('currentStamps').textContent = (user.stamps || 0) + '/10';
+    document.getElementById('customerEmail').textContent = user.email;
     
-    // Show staff discount if applicable
-    const discountPanel = document.getElementById('staffDiscountPanel');
-    if (user.role === ROLES.STAFF || user.role === ROLES.MANAGEMENT) {
-        discountPanel.classList.add('show');
-        logSync('Staff discount auto-applied for ' + user.firstName, 'success');
-    } else {
-        discountPanel.classList.remove('show');
-    }
+    const isStaff = user.role === ROLES.STAFF || user.role === ROLES.MANAGEMENT;
+    document.getElementById('staffDiscountBanner').style.display = isStaff ? 'block' : 'none';
     
-    // Enable/disable redeem
-    const redeemBtn = document.querySelector('.btn-redeem');
-    if ((user.stamps || 0) >= 10) {
-        redeemBtn.style.opacity = '1';
-        redeemBtn.disabled = false;
-    } else {
-        redeemBtn.style.opacity = '0.5';
-        redeemBtn.disabled = true;
+    if (isStaff) {
+        document.getElementById('discountRow').style.display = 'block';
+        document.getElementById('discountAmount').textContent = '£1.14';
+        document.getElementById('basketTotal').textContent = '£4.56';
     }
 }
 
-function addStampToEposTransaction() {
+function addLollyStamp() {
     if (!currentCustomer) return;
     
     let users = JSON.parse(localStorage.getItem('junction_users') || '{}');
@@ -792,13 +789,8 @@ function addStampToEposTransaction() {
         users[username].stamps = (users[username].stamps || 0) + 1;
         localStorage.setItem('junction_users', JSON.stringify(users));
         
-        // Log to EposNow sync
-        logSync(`Stamp added to ${currentTransactionId || 'N/A'} for ${username}`, 'success');
+        showNotification('Stamp added via Lolly!', 'lolly');
         
-        showNotification('Stamp added via EposNow!');
-        loadCustomerForTill(username);
-        
-        // Update if current user
         if (currentUser && currentUser.username === username) {
             currentUser.stamps = users[username].stamps;
             localStorage.setItem('junction_current_user', JSON.stringify(currentUser));
@@ -807,23 +799,36 @@ function addStampToEposTransaction() {
     }
 }
 
-function redeemViaEpos() {
+function redeemViaLolly() {
     if (!currentCustomer || (currentCustomer.stamps || 0) < 10) return;
     
     let users = JSON.parse(localStorage.getItem('junction_users') || '{}');
-    const username = currentCustomer.username;
-    
-    users[username].stamps = 0;
+    users[currentCustomer.username].stamps = 0;
     localStorage.setItem('junction_users', JSON.stringify(users));
     
-    logSync(`FREE COFFEE redeemed on ${currentTransactionId || 'N/A'}`, 'epos');
-    showNotification('☕ Free coffee processed via EposNow!');
-    loadCustomerForTill(username);
+    showNotification('☕ Free coffee processed via Lolly!', 'lolly');
     
-    if (currentUser && currentUser.username === username) {
+    if (currentUser && currentUser.username === currentCustomer.username) {
         currentUser.stamps = 0;
         localStorage.setItem('junction_current_user', JSON.stringify(currentUser));
         renderStamps();
+    }
+}
+
+function processLollyPayment() {
+    showNotification('Processing Lolly payment...', 'lolly');
+    setTimeout(() => {
+        showNotification('✓ Payment complete! Receipt sent to Lolly.', 'lolly');
+    }, 1500);
+}
+
+function switchProvider(provider) {
+    currentProvider = provider;
+    document.querySelectorAll('.provider-tab').forEach(t => t.classList.remove('active'));
+    event.target.classList.add('active');
+    
+    if (provider === 'lolly') {
+        showNotification('Lolly mode activated', 'lolly');
     }
 }
 
@@ -835,9 +840,8 @@ function updateUI() {
     const profileAvatar = document.getElementById('profileAvatar');
     const profileName = document.getElementById('profileName');
     const profileEmail = document.getElementById('profileEmail');
-    const roleBadge = document.getElementById('roleBadge');
-    const eposConfig = document.getElementById('eposConfigPanel');
-    const staffBanner = document.getElementById('staffBanner');
+    const lollyConfig = document.getElementById('lollyConfig');
+    const providerSelection = document.getElementById('providerSelection');
     
     if (currentUser) {
         const isStaff = currentUser.role === ROLES.STAFF || currentUser.role === ROLES.MANAGEMENT;
@@ -845,26 +849,23 @@ function updateUI() {
         
         if (isStaff) {
             tillSwitch.classList.add('visible');
-            staffBanner.style.display = 'block';
-            updateMenuStaffPrices();
+            document.querySelectorAll('.staff-discount-applied').forEach(el => el.style.display = 'block');
         } else {
             tillSwitch.classList.remove('visible');
-            staffBanner.style.display = 'none';
-            resetMenuPrices();
+            document.querySelectorAll('.staff-discount-applied').forEach(el => el.style.display = 'none');
         }
         
         if (isManagement) {
-            eposConfig.classList.add('show');
+            lollyConfig.classList.add('show');
+            providerSelection.style.display = 'block';
         } else {
-            eposConfig.classList.remove('show');
+            lollyConfig.classList.remove('show');
+            providerSelection.style.display = 'none';
         }
         
         profileAvatar.textContent = currentUser.firstName[0];
         profileName.textContent = currentUser.firstName + ' ' + (currentUser.lastName || '');
         profileEmail.textContent = currentUser.email;
-        
-        const roleColors = { customer: '#4CAF50', staff: '#FF9800', management: '#9C27B0' };
-        roleBadge.innerHTML = `<span style="display: inline-block; padding: 6px 16px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; text-transform: uppercase; background: ${roleColors[currentUser.role]}; color: white;">${currentUser.role}</span>`;
         
         logoutBtn.style.display = 'block';
         loginPromptBtn.style.display = 'none';
@@ -873,38 +874,17 @@ function updateUI() {
         renderStamps();
     } else {
         tillSwitch.classList.remove('visible');
-        staffBanner.style.display = 'none';
-        resetMenuPrices();
-        eposConfig.classList.remove('show');
+        lollyConfig.classList.remove('show');
+        providerSelection.style.display = 'none';
         
         profileAvatar.textContent = 'G';
         profileName.textContent = 'Guest';
         profileEmail.textContent = 'Not signed in';
-        roleBadge.innerHTML = '';
         logoutBtn.style.display = 'none';
         loginPromptBtn.style.display = 'block';
     }
     
-    updateEposUI();
-}
-
-function updateMenuStaffPrices() {
-    document.querySelectorAll('.menu-item').forEach(item => {
-        const price = parseFloat(item.getAttribute('data-price'));
-        if (price) {
-            const discounted = (price * 0.8).toFixed(2);
-            item.querySelector('.current-price').innerHTML = `<span style="text-decoration: line-through; color: #666; font-size: 0.9rem; margin-right: 5px;">£${price.toFixed(2)}</span>£${discounted}`;
-        }
-    });
-}
-
-function resetMenuPrices() {
-    document.querySelectorAll('.menu-item').forEach(item => {
-        const price = parseFloat(item.getAttribute('data-price'));
-        if (price) {
-            item.querySelector('.current-price').textContent = '£' + price.toFixed(2);
-        }
-    });
+    updateLollyUI();
 }
 
 function switchTab(tabName) {
@@ -912,18 +892,17 @@ function switchTab(tabName) {
     document.getElementById(tabName === 'till' ? 'tillInterface' : tabName).classList.add('active');
     
     document.querySelectorAll('.nav-item').forEach(item => {
-        item.classList.remove('active', 'epos-connected');
+        item.classList.remove('active');
         if (item.getAttribute('onclick')?.includes(tabName)) {
             item.classList.add('active');
-            if (eposConnected && tabName === 'home') item.classList.add('epos-connected');
         }
     });
 }
 
-function showNotification(message, isError = false) {
+function showNotification(message, type = 'success') {
     const notif = document.getElementById('notification');
     notif.textContent = message;
-    notif.className = 'notification show' + (isError ? ' error' : eposConnected ? ' epos' : '');
+    notif.className = 'notification show' + (type === 'lolly' ? ' lolly' : type === 'error' ? ' error' : '');
     setTimeout(() => notif.classList.remove('show'), 3000);
 }
 </script>
