@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#1a1a1a">
-    <title>The Junction - Lolly Integrated</title>
+    <title>The Junction - SumUp Integrated</title>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
@@ -16,8 +16,9 @@
             --staff: #FF9800;
             --success: #4CAF50;
             --management: #9C27B0;
-            --lolly: #00C853;  /* Lolly green */
-            --lolly-blue: #0091EA;
+            --sumup: #00D06C;  /* SumUp signature green */
+            --sumup-dark: #00B85C;
+            --sumup-blue: #0077C8;
         }
         
         * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; }
@@ -26,95 +27,123 @@
         .header { position: sticky; top: 0; background: rgba(26,26,26,0.95); backdrop-filter: blur(10px); padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; z-index: 100; border-bottom: 1px solid rgba(212,175,55,0.2); }
         .header h1 { font-family: 'Playfair Display', serif; font-size: 1.3rem; color: var(--gold); }
         .icon-btn { background: none; border: none; color: var(--light); font-size: 1.3rem; cursor: pointer; position: relative; }
-        .lolly-badge { position: absolute; top: -5px; right: -5px; background: var(--lolly); color: white; font-size: 0.6rem; padding: 2px 6px; border-radius: 10px; font-weight: bold; }
+        .sumup-badge { position: absolute; top: -5px; right: -5px; background: var(--sumup); color: white; font-size: 0.6rem; padding: 2px 6px; border-radius: 10px; font-weight: bold; }
         
         .nav-bar { position: fixed; bottom: 0; left: 0; width: 100%; background: rgba(26,26,26,0.98); border-top: 1px solid rgba(212,175,55,0.2); display: flex; justify-content: space-around; padding: 10px 0; z-index: 100; }
         .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 5px; color: #666; text-decoration: none; font-size: 0.7rem; transition: color 0.3s; }
         .nav-item.active { color: var(--gold); }
-        .nav-item.lolly-connected { color: var(--lolly); }
+        .nav-item.sumup-connected { color: var(--sumup); }
         .nav-item svg { width: 24px; height: 24px; }
         
         .section { display: none; padding: 20px; animation: fadeIn 0.3s; min-height: 100vh; }
         .section.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         
-        /* Lolly Status Bar */
-        .lolly-status { background: linear-gradient(90deg, rgba(0,200,83,0.1), rgba(0,145,234,0.05)); border: 1px solid var(--lolly); border-radius: 10px; padding: 12px 15px; margin-bottom: 20px; display: none; align-items: center; gap: 10px; font-size: 0.85rem; }
-        .lolly-status.connected { display: flex; }
-        .lolly-dot { width: 8px; height: 8px; background: var(--lolly); border-radius: 50%; animation: pulse 2s infinite; box-shadow: 0 0 10px var(--lolly); }
+        /* SumUp Status Bar */
+        .sumup-status { background: linear-gradient(90deg, rgba(0,208,108,0.1), rgba(0,184,92,0.05)); border: 1px solid var(--sumup); border-radius: 10px; padding: 12px 15px; margin-bottom: 20px; display: none; align-items: center; gap: 10px; font-size: 0.85rem; }
+        .sumup-status.connected { display: flex; }
+        .sumup-dot { width: 8px; height: 8px; background: var(--sumup); border-radius: 50%; animation: pulse 2s infinite; box-shadow: 0 0 10px var(--sumup); }
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
         
-        .provider-tabs { display: flex; gap: 10px; margin-bottom: 20px; }
-        .provider-tab { flex: 1; padding: 10px; border-radius: 8px; border: 2px solid rgba(255,255,255,0.1); background: transparent; color: #888; cursor: pointer; font-weight: 600; font-size: 0.9rem; }
-        .provider-tab.active { border-color: var(--lolly); color: var(--lolly); background: rgba(0,200,83,0.1); }
-        .provider-tab.epos-tab.active { border-color: var(--epos); color: var(--epos); background: rgba(0,188,212,0.1); }
-        
-        /* Loyalty Card with Lolly Branding */
+        /* Loyalty Card with SumUp Branding */
         .loyalty-hero { background: linear-gradient(135deg, var(--primary) 0%, #6b1d29 100%); border-radius: 20px; padding: 25px; margin-bottom: 20px; position: relative; overflow: hidden; }
-        .lolly-sync-badge { position: absolute; top: 15px; right: 15px; background: var(--lolly); color: white; padding: 5px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: bold; display: none; z-index: 2; }
-        .lolly-sync-badge.show { display: block; }
+        .sumup-sync-badge { position: absolute; top: 15px; right: 15px; background: var(--sumup); color: white; padding: 5px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: bold; display: none; z-index: 2; }
+        .sumup-sync-badge.show { display: block; }
         
-        .qr-section { background: white; border-radius: 15px; padding: 20px; display: flex; flex-direction: column; align-items: center; margin: 20px 0; border: 2px solid var(--lolly); box-shadow: 0 0 20px rgba(0,200,83,0.1); }
+        .qr-section { background: white; border-radius: 15px; padding: 20px; display: flex; flex-direction: column; align-items: center; margin: 20px 0; border: 2px solid var(--sumup); box-shadow: 0 0 20px rgba(0,208,108,0.1); }
         .qr-code-container { background: white; padding: 15px; border-radius: 10px; margin-bottom: 10px; }
-        .qr-branding { display: flex; align-items: center; gap: 8px; color: var(--lolly); font-weight: bold; font-size: 0.9rem; margin-top: 5px; }
+        .qr-branding { display: flex; align-items: center; gap: 8px; color: var(--sumup); font-weight: bold; font-size: 0.9rem; margin-top: 5px; }
         .transaction-ref { font-family: monospace; background: #f5f5f5; padding: 8px 15px; border-radius: 20px; margin-top: 10px; font-size: 0.8rem; color: #666; border: 1px dashed #ccc; }
         
         .stamp-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-top: 20px; }
         .stamp { aspect-ratio: 1; border: 3px dashed rgba(255,255,255,0.3); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; background: rgba(0,0,0,0.2); transition: all 0.3s; }
         .stamp.earned { background: var(--gold); border-color: var(--gold); color: var(--dark); box-shadow: 0 0 15px rgba(212,175,55,0.5); }
-        .stamp.lolly-synced { border-color: var(--lolly); box-shadow: 0 0 10px rgba(0,200,83,0.3); }
+        .stamp.sumup-synced { border-color: var(--sumup); box-shadow: 0 0 10px rgba(0,208,108,0.3); }
         
-        /* Lolly Till Interface */
+        /* SumUp Till Interface */
         .till-mode-switch { position: fixed; top: 100px; right: 20px; z-index: 99; background: var(--staff); color: white; padding: 10px 20px; border-radius: 30px; font-weight: bold; font-size: 0.85rem; cursor: pointer; display: none; align-items: center; gap: 8px; box-shadow: 0 4px 15px rgba(255,152,0,0.3); }
         .till-mode-switch.visible { display: flex; }
-        .till-mode-switch.lolly-mode { background: var(--lolly); box-shadow: 0 4px 15px rgba(0,200,83,0.3); }
+        .till-mode-switch.sumup-mode { background: var(--sumup); box-shadow: 0 4px 15px rgba(0,208,108,0.3); }
         
         .till-interface { display: none; background: #2d2d2d; border-radius: 20px; padding: 25px; margin-bottom: 80px; border: 2px solid var(--staff); position: relative; }
-        .till-interface.lolly-mode { border-color: var(--lolly); background: linear-gradient(180deg, #1a1a1a 0%, #0d1f0d 100%); }
+        .till-interface.sumup-mode { border-color: var(--sumup); background: linear-gradient(180deg, #1a1a1a 0%, #0a1f14 100%); }
         .till-interface.active { display: block; }
         
-        .lolly-terminal-header { position: absolute; top: -12px; left: 20px; background: var(--lolly); color: white; padding: 4px 15px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; display: flex; align-items: center; gap: 5px; }
+        .sumup-terminal-header { position: absolute; top: -12px; left: 20px; background: var(--sumup); color: white; padding: 4px 15px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; display: flex; align-items: center; gap: 5px; }
         
         .scanner-area { background: #1a1a1a; border: 3px dashed var(--staff); border-radius: 15px; height: 200px; display: flex; flex-direction: column; align-items: center; justify-content: center; margin-bottom: 20px; position: relative; overflow: hidden; }
-        .scanner-area.lolly-mode { border-color: var(--lolly); background: linear-gradient(135deg, rgba(0,200,83,0.05), rgba(0,145,234,0.05)); }
+        .scanner-area.sumup-mode { border-color: var(--sumup); background: linear-gradient(135deg, rgba(0,208,108,0.05), rgba(0,184,92,0.05)); }
         .scanner-line { position: absolute; width: 100%; height: 2px; background: var(--staff); box-shadow: 0 0 10px var(--staff); animation: scan 2s linear infinite; }
-        .scanner-area.lolly-mode .scanner-line { background: var(--lolly); box-shadow: 0 0 15px var(--lolly); }
+        .scanner-area.sumup-mode .scanner-line { background: var(--sumup); box-shadow: 0 0 15px var(--sumup); }
+        @keyframes scan { 0% { top: 0; } 50% { top: 100%; } 100% { top: 0; } }
         
-        .lolly-link-panel { background: linear-gradient(135deg, rgba(0,200,83,0.1), rgba(0,145,234,0.05)); border: 1px solid var(--lolly); border-radius: 12px; padding: 20px; margin-bottom: 20px; }
-        .lolly-link-panel h4 { color: var(--lolly); margin-bottom: 15px; display: flex; align-items: center; gap: 8px; }
-        .lolly-input { width: 100%; padding: 12px; border: 1px solid var(--lolly); background: #1a1a1a; color: white; border-radius: 8px; margin-bottom: 10px; font-family: monospace; }
-        .btn-lolly { background: var(--lolly); color: white; width: 100%; padding: 15px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
-        .btn-lolly-secondary { background: transparent; border: 2px solid var(--lolly); color: var(--lolly); margin-top: 10px; }
+        .sumup-link-panel { background: linear-gradient(135deg, rgba(0,208,108,0.1), rgba(0,184,92,0.05)); border: 1px solid var(--sumup); border-radius: 12px; padding: 20px; margin-bottom: 20px; }
+        .sumup-link-panel h4 { color: var(--sumup); margin-bottom: 15px; display: flex; align-items: center; gap: 8px; }
+        .sumup-input { width: 100%; padding: 12px; border: 1px solid var(--sumup); background: #1a1a1a; color: white; border-radius: 8px; margin-bottom: 10px; font-family: monospace; }
+        .btn-sumup { background: var(--sumup); color: white; width: 100%; padding: 15px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 1rem; }
+        .btn-sumup-secondary { background: transparent; border: 2px solid var(--sumup); color: var(--sumup); margin-top: 10px; }
         
-        .basket-panel { background: rgba(0,200,83,0.05); border: 1px solid rgba(0,200,83,0.3); border-radius: 12px; padding: 15px; margin: 15px 0; }
+        .terminal-status { background: rgba(0,208,108,0.1); border-radius: 10px; padding: 15px; margin-bottom: 20px; border: 1px solid rgba(0,208,108,0.3); }
+        .terminal-status h4 { color: var(--sumup); margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; }
+        .terminal-id { font-family: monospace; background: rgba(0,0,0,0.3); padding: 5px 10px; border-radius: 5px; font-size: 0.85rem; }
+        
+        .amount-input { font-size: 1.5rem; text-align: center; padding: 20px; background: #1a1a1a; border: 2px solid var(--sumup); border-radius: 10px; color: white; width: 100%; margin-bottom: 15px; font-weight: bold; }
+        
+        .quick-amounts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; }
+        .quick-amount { padding: 15px; background: rgba(0,208,108,0.1); border: 1px solid var(--sumup); border-radius: 8px; color: var(--sumup); font-weight: bold; cursor: pointer; text-align: center; }
+        .quick-amount:active { background: var(--sumup); color: white; }
+        
+        .basket-panel { background: rgba(0,208,108,0.05); border: 1px solid rgba(0,208,108,0.3); border-radius: 12px; padding: 15px; margin: 15px 0; }
         .basket-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
-        .basket-total { display: flex; justify-content: space-between; font-weight: bold; margin-top: 10px; padding-top: 10px; border-top: 2px solid var(--lolly); color: var(--lolly); }
+        .basket-total { display: flex; justify-content: space-between; font-weight: bold; margin-top: 10px; padding-top: 10px; border-top: 2px solid var(--sumup); color: var(--sumup); }
         
-        /* Lolly Configuration */
-        .lolly-config { background: linear-gradient(135deg, rgba(0,200,83,0.1), rgba(0,145,234,0.05)); border-radius: 15px; padding: 20px; margin-bottom: 20px; border: 1px solid var(--lolly); display: none; }
-        .lolly-config.show { display: block; }
-        .lolly-config h3 { color: var(--lolly); margin-bottom: 15px; font-family: 'Playfair Display', serif; }
+        /* SumUp Configuration */
+        .sumup-config { background: linear-gradient(135deg, rgba(0,208,108,0.1), rgba(0,184,92,0.05)); border-radius: 15px; padding: 20px; margin-bottom: 20px; border: 1px solid var(--sumup); display: none; }
+        .sumup-config.show { display: block; }
+        .sumup-config h3 { color: var(--sumup); margin-bottom: 15px; font-family: 'Playfair Display', serif; }
+        
         .config-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
         
-        .venue-selector { background: #1a1a1a; border: 1px solid var(--lolly); border-radius: 8px; padding: 10px; color: white; width: 100%; margin-bottom: 15px; }
+        .merchant-info { background: #1a1a1a; border-radius: 8px; padding: 15px; margin-bottom: 15px; border: 1px solid rgba(0,208,108,0.3); }
+        .merchant-info h4 { color: var(--sumup); margin-bottom: 5px; }
+        .merchant-info p { color: #888; font-size: 0.85rem; }
+        
+        .connection-method { display: flex; gap: 10px; margin-bottom: 15px; }
+        .method-btn { flex: 1; padding: 12px; border: 1px solid rgba(255,255,255,0.2); background: transparent; color: #888; border-radius: 8px; cursor: pointer; font-size: 0.9rem; }
+        .method-btn.active { border-color: var(--sumup); color: var(--sumup); background: rgba(0,208,108,0.1); }
         
         .sync-status { display: flex; align-items: center; gap: 10px; font-size: 0.85rem; color: #888; margin-top: 15px; padding: 10px; background: rgba(0,0,0,0.3); border-radius: 8px; }
-        .sync-spinner { width: 16px; height: 16px; border: 2px solid var(--lolly); border-top-color: transparent; border-radius: 50%; animation: spin 1s linear infinite; display: none; }
+        .sync-spinner { width: 16px; height: 16px; border: 2px solid var(--sumup); border-top-color: transparent; border-radius: 50%; animation: spin 1s linear infinite; display: none; }
         .sync-spinner.active { display: block; }
         @keyframes spin { to { transform: rotate(360deg); } }
         
-        /* Menu Items with Lolly SKU */
+        /* Menu with SumUp SKU */
         .menu-item { background: #2d2d2d; border-radius: 12px; padding: 15px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; border: 1px solid rgba(255,255,255,0.05); position: relative; }
-        .menu-item.lolly-linked { border-left: 3px solid var(--lolly); }
-        .lolly-sku { position: absolute; top: 5px; right: 10px; font-size: 0.65rem; color: var(--lolly); font-family: monospace; background: rgba(0,200,83,0.1); padding: 2px 6px; border-radius: 4px; }
+        .menu-item.sumup-linked { border-left: 3px solid var(--sumup); }
+        .sumup-sku { position: absolute; top: 5px; right: 10px; font-size: 0.65rem; color: var(--sumup); font-family: monospace; background: rgba(0,208,108,0.1); padding: 2px 6px; border-radius: 4px; }
         
         .price-display { text-align: right; }
         .staff-discount-applied { color: var(--staff); font-size: 0.8rem; margin-top: 4px; }
         
+        .add-to-basket { background: var(--sumup); color: white; border: none; padding: 8px 16px; border-radius: 20px; font-weight: bold; font-size: 0.85rem; cursor: pointer; margin-left: 10px; }
+        
+        /* Customer Found Panel */
+        .customer-found { display: none; background: rgba(76,175,80,0.1); border: 1px solid var(--success); border-radius: 15px; padding: 20px; margin-bottom: 20px; }
+        .customer-found.show { display: block; animation: slideIn 0.3s; }
+        
+        .customer-card { display: flex; align-items: center; gap: 15px; margin-bottom: 15px; }
+        .customer-avatar { width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, var(--sumup) 0%, var(--sumup-dark) 100%); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: bold; color: white; }
+        
+        .discount-banner { display: none; background: linear-gradient(135deg, rgba(255,152,0,0.2), rgba(255,152,0,0.1)); border: 2px solid var(--staff); border-radius: 10px; padding: 15px; text-align: center; margin-bottom: 15px; }
+        .discount-banner.show { display: block; }
+        
+        .stamp-controls { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
+        
         /* Notifications */
         .notification { position: fixed; top: 80px; left: 50%; transform: translateX(-50%) translateY(-100%); background: var(--success); color: white; padding: 15px 30px; border-radius: 30px; font-weight: bold; z-index: 400; opacity: 0; transition: all 0.3s; box-shadow: 0 5px 20px rgba(0,0,0,0.3); }
         .notification.show { transform: translateX(-50%) translateY(0); opacity: 1; }
-        .notification.lolly { background: var(--lolly); }
+        .notification.sumup { background: var(--sumup); }
+        .notification.error { background: var(--primary); }
         
         /* Auth Modal */
         .auth-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 300; justify-content: flex-end; align-items: flex-end; }
@@ -140,11 +169,11 @@
 
 <div id="notification" class="notification">Success</div>
 
-<!-- Lolly Status Bar -->
-<div id="lollyStatusBar" class="lolly-status">
-    <div class="lolly-dot"></div>
-    <span><strong>Lolly Connected</strong> - Venue: The Junction Marsh</span>
-    <span style="margin-left: auto; font-size: 0.75rem; opacity: 0.8;">Real-time Sync</span>
+<!-- SumUp Status Bar -->
+<div id="sumupStatusBar" class="sumup-status">
+    <div class="sumup-dot"></div>
+    <span><strong>SumUp Connected</strong> - Terminal Ready</span>
+    <span style="margin-left: auto; font-size: 0.75rem; opacity: 0.8;">Live Payments</span>
 </div>
 
 <!-- Till Mode Switch -->
@@ -161,7 +190,7 @@
             <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
             <circle cx="12" cy="7" r="4"></circle>
         </svg>
-        <span id="lollyBadge" class="lolly-badge" style="display: none;">LOL</span>
+        <span id="sumupBadge" class="sumup-badge" style="display: none;">SUM</span>
     </button>
 </div>
 
@@ -196,10 +225,6 @@
                     <label>Username</label>
                     <input type="text" id="signupUsername" required placeholder="Choose username">
                 </div>
-                <div class="form-group">
-                    <label>Email</label>
-                    <input type="email" id="signupEmail" required placeholder="john@example.com">
-                </div>
                 <button type="submit" class="btn">Create Account</button>
             </form>
         </div>
@@ -208,16 +233,8 @@
 
 <!-- HOME / LOYALTY CARD -->
 <div id="home" class="section active">
-    <!-- Provider Selection (Management Only) -->
-    <div id="providerSelection" style="display: none; margin-bottom: 20px;">
-        <div class="provider-tabs">
-            <button class="provider-tab active" onclick="switchProvider('lolly')">Lolly</button>
-            <button class="provider-tab" onclick="switchProvider('generic')">Generic</button>
-        </div>
-    </div>
-
     <div class="loyalty-hero">
-        <div id="lollySyncBadge" class="lolly-sync-badge">SYNCED WITH LOLLY</div>
+        <div id="sumupSyncBadge" class="sumup-sync-badge">SUMUP ENABLED</div>
         
         <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px;">
             <div>
@@ -230,88 +247,110 @@
             </div>
         </div>
         
-        <!-- Lolly QR Code -->
+        <!-- SumUp QR Code -->
         <div class="qr-section">
             <div id="qrcode" class="qr-code-container"></div>
             <div class="qr-branding">
-                <span>🔗</span>
-                <span>Scan with Lolly Till</span>
+                <span>💳</span>
+                <span>Scan with SumUp</span>
             </div>
-            <div class="transaction-ref" id="lollyTransactionRef">LOLLY-TXN: Waiting...</div>
+            <div class="transaction-ref" id="sumupTransactionRef">SUMUP-TXN: Waiting...</div>
         </div>
         
         <div class="stamp-grid" id="stampGrid"></div>
         
         <div style="background: rgba(0,0,0,0.3); height: 8px; border-radius: 10px; margin-top: 20px; overflow: hidden;">
-            <div id="progressFill" style="background: linear-gradient(90deg, var(--lolly), var(--gold)); height: 100%; width: 0%; transition: width 0.5s;"></div>
+            <div id="progressFill" style="background: linear-gradient(90deg, var(--sumup), var(--gold)); height: 100%; width: 0%; transition: width 0.5s;"></div>
         </div>
     </div>
     
-    <div id="lollyApiInfo" style="background: linear-gradient(135deg, rgba(0,200,83,0.1), rgba(0,145,234,0.05)); border-radius: 12px; padding: 15px; margin-bottom: 20px; border: 1px solid var(--lolly); display: none;">
-        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+    <div id="sumupInfo" style="background: linear-gradient(135deg, rgba(0,208,108,0.1), rgba(0,184,92,0.05)); border-radius: 12px; padding: 15px; margin-bottom: 20px; border: 1px solid var(--sumup); display: none;">
+        <div style="display: flex; align-items: center; gap: 10px;">
             <span style="font-size: 1.5rem;">💳</span>
             <div>
-                <div style="font-weight: bold; color: var(--lolly);">Lolly Pay Integration</div>
-                <div style="font-size: 0.85rem; color: #888;">Stamps auto-sync with Lolly transactions</div>
+                <div style="font-weight: bold; color: var(--sumup);">SumUp Pay Ready</div>
+                <div style="font-size: 0.85rem; color: #888;">Card payments + Loyalty combined</div>
             </div>
         </div>
     </div>
 
-    <h3 style="font-family: 'Playfair Display', serif; color: var(--gold); margin-bottom: 15px;">Recent Activity</h3>
+    <h3 style="font-family: 'Playfair Display', serif; color: var(--gold); margin-bottom: 15px;">Recent SumUp Transactions</h3>
     <div id="transactionHistory">
-        <div style="text-align: center; color: #666; padding: 20px;">No Lolly transactions yet</div>
+        <div style="text-align: center; color: #666; padding: 20px;">No SumUp transactions yet</div>
     </div>
 </div>
 
-<!-- TILL INTERFACE (LOLLY MODE) -->
+<!-- TILL INTERFACE (SUMUP MODE) -->
 <div id="tillInterface" class="section till-interface">
-    <div class="lolly-terminal-header">
-        <span>⚡</span>
-        <span>LOLLY TERMINAL</span>
+    <div class="sumup-terminal-header">
+        <span>💳</span>
+        <span>SUMUP TERMINAL</span>
     </div>
     
-    <h2 style="font-family: 'Playfair Display', serif; color: var(--lolly); margin-bottom: 10px; margin-top: 10px;">Lolly Scan & Pay</h2>
-    <div style="color: #888; font-size: 0.85rem; margin-bottom: 20px;">Scan customer QR to link loyalty</div>
+    <h2 style="font-family: 'Playfair Display', serif; color: var(--sumup); margin-bottom: 10px; margin-top: 10px;">SumUp Till</h2>
+    <div style="color: #888; font-size: 0.85rem; margin-bottom: 20px;">Scan loyalty or process card payment</div>
     
-    <div class="scanner-area lolly-mode" id="scannerArea">
+    <!-- Terminal Status -->
+    <div class="terminal-status">
+        <h4>
+            <span>Terminal Status</span>
+            <span class="terminal-id" id="terminalId">T-001</span>
+        </h4>
+        <div style="display: flex; align-items: center; gap: 8px; color: var(--sumup); font-size: 0.9rem;">
+            <span>●</span> Online & Ready
+        </div>
+    </div>
+    
+    <div class="scanner-area sumup-mode" id="scannerArea">
         <div class="scanner-line"></div>
-        <button class="btn-lolly" style="z-index: 2; position: relative; padding: 15px 40px; border-radius: 30px;" onclick="simulateLollyScan()">
-            Scan Lolly QR
+        <button class="btn-sumup" style="z-index: 2; position: relative; padding: 15px 40px; border-radius: 30px;" onclick="simulateSumupScan()">
+            Scan Loyalty QR
         </button>
-        <div style="color: #666; margin-top: 15px; font-size: 0.85rem;">Or enter Lolly Transaction ID</div>
+        <div style="color: #666; margin-top: 15px; font-size: 0.85rem;">Or enter amount below</div>
     </div>
     
-    <div class="lolly-link-panel">
-        <h4>🔗 Link Lolly Transaction</h4>
-        <input type="text" id="lollyTxnInput" class="lolly-input" placeholder="e.g., LOLLY-8834221">
-        <button class="btn-lolly" onclick="linkLollyTransaction()">Lookup Lolly Receipt</button>
-        <button class="btn-lolly btn-lolly-secondary" onclick="refreshLollyMenu()">Refresh Menu from Lolly</button>
+    <!-- Quick Amount Entry -->
+    <div style="margin-bottom: 20px;">
+        <input type="number" class="amount-input" id="paymentAmount" placeholder="£0.00" step="0.01" min="0">
+        <div class="quick-amounts">
+            <div class="quick-amount" onclick="setAmount(3.50)">£3.50<br><small>Latte</small></div>
+            <div class="quick-amount" onclick="setAmount(3.20)">£3.20<br><small>Cappuccino</small></div>
+            <div class="quick-amount" onclick="setAmount(2.80)">£2.80<br><small>Americano</small></div>
+        </div>
+        <button class="btn-sumup" onclick="createSumupPayment()">
+            Send to SumUp Card Reader
+        </button>
+    </div>
+    
+    <div class="sumup-link-panel">
+        <h4>🔗 Link SumUp Transaction</h4>
+        <input type="text" id="sumupTxnInput" class="sumup-input" placeholder="Enter SumUp Transaction ID">
+        <button class="btn-sumup" onclick="linkSumupTransaction()">Lookup & Add Stamp</button>
     </div>
     
     <div id="customerFound" class="customer-found">
         <div class="customer-card">
-            <div class="customer-avatar" id="customerAvatar" style="background: linear-gradient(135deg, var(--lolly) 0%, var(--lolly-blue) 100%);">?</div>
+            <div class="customer-avatar" id="customerAvatar">?</div>
             <div>
                 <div id="customerName" style="font-weight: bold; font-size: 1.1rem;">Customer</div>
                 <div id="customerEmail" style="font-size: 0.85rem; color: #888;">email@example.com</div>
+                <div id="customerStamps" style="color: var(--sumup); font-size: 0.8rem; margin-top: 4px;">0/10 stamps</div>
             </div>
         </div>
         
-        <div id="staffDiscountBanner" style="display: none; background: linear-gradient(135deg, rgba(255,152,0,0.2), rgba(255,152,0,0.1)); border: 2px solid var(--staff); border-radius: 10px; padding: 15px; text-align: center; margin-bottom: 15px;">
+        <div id="staffDiscountBanner" class="discount-banner">
             <div style="font-size: 1.3rem; font-weight: bold; color: var(--staff);">20% Staff Discount</div>
-            <div style="font-size: 0.85rem; color: #888; margin-top: 5px;">Applied via Lolly discount engine</div>
+            <div style="font-size: 0.85rem; color: #888; margin-top: 5px;">Will be applied to SumUp total</div>
         </div>
         
         <div class="basket-panel">
-            <div style="display: flex; justify-content: space-between; margin-bottom: 10px; color: var(--lolly); font-weight: bold;">
-                <span>Lolly Basket</span>
-                <span id="basketItemCount">0 items</span>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 10px; color: var(--sumup); font-weight: bold;">
+                <span>Current Sale</span>
+                <span id="saleStatus">Pending</span>
             </div>
-            <div id="basketItems">
-                <!-- Populated by Lolly API -->
-            </div>
+            <div id="basketItems"></div>
             <div class="basket-total">
-                <span>Total Due:</span>
+                <span>SumUp Total:</span>
                 <span id="basketTotal">£0.00</span>
             </div>
             <div id="discountRow" style="display: none; text-align: right; color: var(--staff); font-size: 0.9rem; margin-top: 5px;">
@@ -320,13 +359,9 @@
         </div>
         
         <div class="stamp-controls">
-            <button class="btn" style="background: var(--lolly);" onclick="addLollyStamp()">+ Add Lolly Stamp</button>
-            <button class="btn" style="background: var(--gold); color: var(--dark);" onclick="redeemViaLolly()">☕ Free Coffee</button>
+            <button class="btn" style="background: var(--sumup);" onclick="addSumupStamp()">+ Add Stamp</button>
+            <button class="btn" style="background: var(--gold); color: var(--dark);" onclick="redeemViaSumup()">☕ Free Coffee</button>
         </div>
-        
-        <button class="btn-lolly btn-lolly-secondary" style="margin-top: 10px;" onclick="processLollyPayment()">
-            Process Lolly Payment →
-        </button>
     </div>
 </div>
 
@@ -334,15 +369,14 @@
 <div id="menu" class="section">
     <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px;">
         <h2 style="font-family: 'Playfair Display', serif; color: var(--gold); flex: 1;">Menu</h2>
-        <div id="lollyMenuBadge" style="display: none; background: var(--lolly); color: white; padding: 5px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: bold;">
-            LOLLY SYNCED
+        <div id="sumupMenuBadge" style="display: none; background: var(--sumup); color: white; padding: 5px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: bold;">
+            SUMUP SYNCED
         </div>
     </div>
     
     <div id="menuContainer">
-        <!-- Lolly products will be loaded here -->
-        <div class="menu-item lolly-linked" data-price="3.50" data-lolly-id="PROD-001">
-            <span class="lolly-sku">LOLLY-001</span>
+        <div class="menu-item sumup-linked" data-price="3.50" data-sumup-id="PROD-LATTE-001">
+            <span class="sumup-sku">SUMUP-001</span>
             <div style="flex: 1;">
                 <h4>Latte</h4>
                 <p style="font-size: 0.85rem; color: #888;">Double shot with steamed milk</p>
@@ -351,12 +385,35 @@
                 <div style="color: var(--gold); font-weight: bold; font-size: 1.2rem;">£3.50</div>
                 <div class="staff-discount-applied" style="display: none;">Staff: £2.80</div>
             </div>
+            <button class="add-to-basket" onclick="addToSumupBasket('Latte', 3.50)">Add</button>
+        </div>
+        
+        <div class="menu-item sumup-linked" data-price="3.20" data-sumup-id="PROD-CAP-002">
+            <span class="sumup-sku">SUMUP-002</span>
+            <div style="flex: 1;">
+                <h4>Cappuccino</h4>
+                <p style="font-size: 0.85rem; color: #888;">Rich espresso with foam</p>
+            </div>
+            <div class="price-display">
+                <div style="color: var(--gold); font-weight: bold; font-size: 1.2rem;">£3.20</div>
+                <div class="staff-discount-applied" style="display: none;">Staff: £2.56</div>
+            </div>
+            <button class="add-to-basket" onclick="addToSumupBasket('Cappuccino', 3.20)">Add</button>
+        </div>
+        
+        <div class="menu-item sumup-linked" data-price="2.80" data-sumup-id="PROD-AMER-003">
+            <span class="sumup-sku">SUMUP-003</span>
+            <div style="flex: 1;">
+                <h4>Americano</h4>
+                <p style="font-size: 0.85rem; color: #888;">Double shot with hot water</p>
+            </div>
+            <div class="price-display">
+                <div style="color: var(--gold); font-weight: bold; font-size: 1.2rem;">£2.80</div>
+                <div class="staff-discount-applied" style="display: none;">Staff: £2.24</div>
+            </div>
+            <button class="add-to-basket" onclick="addToSumupBasket('Americano', 2.80)">Add</button>
         </div>
     </div>
-    
-    <button onclick="syncMenuToLolly()" class="btn-lolly" style="margin-top: 20px;">
-        Sync Menu to Lolly Catalog
-    </button>
 </div>
 
 <!-- PROFILE / SETTINGS -->
@@ -367,42 +424,53 @@
         <div style="color: #888; margin-top: 5px;" id="profileEmail">Not signed in</div>
     </div>
     
-    <!-- Lolly Integration Config -->
-    <div id="lollyConfig" class="lolly-config">
-        <h3>🔗 Lolly Integration Settings</h3>
+    <!-- SumUp Integration Config -->
+    <div id="sumupConfig" class="sumup-config">
+        <h3>💳 SumUp Integration</h3>
+        
+        <div class="connection-method">
+            <button class="method-btn active" onclick="setConnectionMethod('api')">API Key</button>
+            <button class="method-btn" onclick="setConnectionMethod('oauth')">OAuth</button>
+        </div>
         
         <div class="config-grid">
             <div class="form-group">
-                <label>Lolly API Key</label>
-                <input type="text" id="lollyApiKey" placeholder="lol_live_xxxxxxxx">
+                <label>SumUp API Key</label>
+                <input type="text" id="sumupApiKey" placeholder="sup_sk_xxxxxxxx">
             </div>
             <div class="form-group">
-                <label>Merchant ID</label>
-                <input type="text" id="lollyMerchantId" placeholder="M-XXXXX">
+                <label>Merchant Code</label>
+                <input type="text" id="sumupMerchantCode" placeholder="Mxxxx">
             </div>
         </div>
         
-        <label style="color: #888; font-size: 0.9rem; display: block; margin-bottom: 8px;">Select Venue</label>
-        <select class="venue-selector" id="lollyVenue">
-            <option value="">Loading venues...</option>
-            <option value="venue-001">The Junction - Marsh (Main)</option>
-            <option value="venue-002">The Junction - Greenhead Park</option>
-        </select>
+        <div class="form-group">
+            <label>Card Reader Terminal ID</label>
+            <input type="text" id="sumupTerminalId" value="T-001" placeholder="Enter terminal serial">
+        </div>
         
-        <button class="btn-lolly" onclick="connectToLolly()">Connect to Lolly</button>
+        <div class="merchant-info" id="merchantInfo" style="display: none;">
+            <h4>The Junction Marsh</h4>
+            <p>Merchant ID: M12345</p>
+            <p style="margin-top: 5px;">Currency: GBP (£)</p>
+        </div>
+        
+        <button class="btn-sumup" onclick="connectToSumup()">Connect to SumUp</button>
+        <button class="btn-sumup btn-sumup-secondary" onclick="testSumupConnection()">Test Connection</button>
         
         <div class="sync-status">
-            <div class="sync-spinner" id="lollySpinner"></div>
-            <span id="lollySyncText">Ready to connect to Lolly API</span>
+            <div class="sync-spinner" id="sumupSpinner"></div>
+            <span id="sumupSyncText">Ready to connect to SumUp API</span>
         </div>
         
         <div style="margin-top: 15px; padding: 15px; background: rgba(0,0,0,0.3); border-radius: 8px; font-size: 0.85rem; color: #888;">
-            <strong style="color: var(--lolly);">Lolly Features:</strong>
+            <strong style="color: var(--sumup);">SumUp Features:</strong>
             <ul style="margin-top: 8px; padding-left: 20px; line-height: 1.6;">
-                <li>Real-time product catalog sync</li>
-                <li>Automatic stamp allocation per transaction</li>
-                <li>Staff discount auto-application</li>
-                <li>QR code payment integration</li>
+                <li>Card reader integration (Air, Solo, 3G)</li>
+                <li>Contactless, Chip & PIN, Apple/Google Pay</li>
+                <li>Automatic loyalty stamp allocation</li>
+                <li>Staff discount on card transactions</li>
+                <li>Real-time transaction sync</li>
             </ul>
         </div>
     </div>
@@ -431,8 +499,9 @@ const ROLES = { CUSTOMER: 'customer', STAFF: 'staff', MANAGEMENT: 'management' }
 let currentUser = null;
 let tillMode = false;
 let currentCustomer = null;
-let lollyConnected = false;
-let currentProvider = 'lolly'; // 'lolly' or 'generic'
+let sumupConnected = false;
+let currentBasket = [];
+let connectionMethod = 'api';
 
 // Demo Data
 const DEMO_USERS = {
@@ -449,6 +518,13 @@ document.addEventListener('DOMContentLoaded', () => {
 function initDemoData() {
     if (!localStorage.getItem('junction_users')) {
         localStorage.setItem('junction_users', JSON.stringify(DEMO_USERS));
+    }
+    if (localStorage.getItem('sumup_config')) {
+        const config = JSON.parse(localStorage.getItem('sumup_config'));
+        if (config.connected) {
+            sumupConnected = true;
+            updateSumupUI();
+        }
     }
 }
 
@@ -499,8 +575,8 @@ function handleSignup(e) {
     const firstName = name[0];
     const lastName = name.slice(1).join(' ');
     const username = document.getElementById('signupUsername').value;
-    const email = document.getElementById('signupEmail').value;
-    const password = document.getElementById('signupPassword').value;
+    const email = firstName.toLowerCase() + '@email.com';
+    const password = 'password123';
     
     let users = JSON.parse(localStorage.getItem('junction_users') || '{}');
     if (users[username]) {
@@ -534,122 +610,79 @@ function checkAuthState() {
     }
 }
 
-// Lolly Integration Functions
-function connectToLolly() {
-    const apiKey = document.getElementById('lollyApiKey').value;
-    const merchantId = document.getElementById('lollyMerchantId').value;
-    const venue = document.getElementById('lollyVenue').value;
+// SumUp Integration Functions
+function setConnectionMethod(method) {
+    connectionMethod = method;
+    document.querySelectorAll('.method-btn').forEach(b => b.classList.remove('active'));
+    event.target.classList.add('active');
+}
+
+function connectToSumup() {
+    const apiKey = document.getElementById('sumupApiKey').value;
+    const merchantCode = document.getElementById('sumupMerchantCode').value;
+    const terminalId = document.getElementById('sumupTerminalId').value;
     
-    if (!apiKey || !merchantId) {
-        showNotification('Enter Lolly API credentials', true);
+    if (!apiKey || !merchantCode) {
+        showNotification('Enter SumUp credentials', true);
         return;
     }
     
-    const spinner = document.getElementById('lollySpinner');
-    const statusText = document.getElementById('lollySyncText');
+    const spinner = document.getElementById('sumupSpinner');
+    const statusText = document.getElementById('sumupSyncText');
     
     spinner.classList.add('active');
-    statusText.textContent = 'Connecting to Lolly API...';
+    statusText.textContent = 'Connecting to SumUp...';
     
-    // Simulate Lolly API connection
+    // Simulate SumUp API connection
     setTimeout(() => {
-        lollyConnected = true;
-        localStorage.setItem('lolly_config', JSON.stringify({
+        sumupConnected = true;
+        localStorage.setItem('sumup_config', JSON.stringify({
             connected: true,
             apiKey,
-            merchantId,
-            venue,
+            merchantCode,
+            terminalId,
             connectedAt: new Date().toISOString()
         }));
         
-        statusText.textContent = '✓ Connected to Lolly - Venue: ' + venue;
-        statusText.style.color = 'var(--lolly)';
+        document.getElementById('merchantInfo').style.display = 'block';
+        statusText.textContent = '✓ Connected to SumUp - Terminal ' + terminalId;
+        statusText.style.color = 'var(--sumup)';
         spinner.classList.remove('active');
         
-        updateLollyUI();
-        showNotification('Lolly Connected!', 'lolly');
-        
-        // Simulate fetching menu
-        fetchLollyMenu();
+        updateSumupUI();
+        showNotification('SumUp Connected!', 'sumup');
     }, 2000);
 }
 
-function updateLollyUI() {
-    if (!lollyConnected) return;
-    
-    document.getElementById('lollyStatusBar')?.classList.add('connected');
-    document.getElementById('lollySyncBadge')?.classList.add('show');
-    document.getElementById('lollyBadge').style.display = 'block';
-    document.getElementById('lollyMenuBadge').style.display = 'block';
-    document.getElementById('lollyApiInfo').style.display = 'block';
-    document.getElementById('tillModeSwitch')?.classList.add('lolly-mode');
-    document.getElementById('tillInterface')?.classList.add('lolly-mode');
-    document.getElementById('scannerArea')?.classList.add('lolly-mode');
-    
-    // Update nav item
-    document.querySelectorAll('.nav-item').forEach(item => {
-        if (item.getAttribute('onclick')?.includes('home')) {
-            item.classList.add('lolly-connected');
-        }
-    });
-}
-
-function fetchLollyMenu() {
-    // Simulate fetching from Lolly Catalog API
-    showNotification('Fetching Lolly menu...', 'lolly');
-    
-    setTimeout(() => {
-        const lollyProducts = [
-            { id: 'PROD-001', name: 'Latte', price: 3.50, sku: 'LOLLY-001', category: 'Coffee' },
-            { id: 'PROD-002', name: 'Cappuccino', price: 3.20, sku: 'LOLLY-002', category: 'Coffee' },
-            { id: 'PROD-003', name: 'Americano', price: 2.80, sku: 'LOLLY-003', category: 'Coffee' },
-            { id: 'PROD-004', name: 'Espresso', price: 2.20, sku: 'LOLLY-004', category: 'Coffee' }
-        ];
-        
-        renderLollyMenu(lollyProducts);
-        showNotification('Menu synced with Lolly!', 'lolly');
-    }, 1500);
-}
-
-function renderLollyMenu(products) {
-    const container = document.getElementById('menuContainer');
-    container.innerHTML = '';
-    
-    products.forEach(product => {
-        const item = document.createElement('div');
-        item.className = 'menu-item lolly-linked';
-        item.setAttribute('data-price', product.price);
-        item.setAttribute('data-lolly-id', product.id);
-        
-        item.innerHTML = `
-            <span class="lolly-sku">${product.sku}</span>
-            <div style="flex: 1;">
-                <h4>${product.name}</h4>
-                <p style="font-size: 0.85rem; color: #888;">${product.category}</p>
-            </div>
-            <div class="price-display">
-                <div style="color: var(--gold); font-weight: bold; font-size: 1.2rem;">£${product.price.toFixed(2)}</div>
-                <div class="staff-discount-applied" style="display: none;">Staff: £${(product.price * 0.8).toFixed(2)}</div>
-            </div>
-        `;
-        container.appendChild(item);
-    });
-}
-
-function syncMenuToLolly() {
-    if (!lollyConnected) {
-        showNotification('Connect to Lolly first', true);
+function testSumupConnection() {
+    if (!sumupConnected) {
+        showNotification('Connect to SumUp first', true);
         return;
     }
     
-    showNotification('Syncing menu to Lolly Catalog...', 'lolly');
+    showNotification('Testing SumUp connection...', 'sumup');
     setTimeout(() => {
-        showNotification('4 items synced to Lolly!', 'lolly');
-    }, 1500);
+        showNotification('✓ SumUp API responding - Terminal Ready', 'sumup');
+    }, 1000);
 }
 
-function refreshLollyMenu() {
-    fetchLollyMenu();
+function updateSumupUI() {
+    if (!sumupConnected) return;
+    
+    document.getElementById('sumupStatusBar')?.classList.add('connected');
+    document.getElementById('sumupSyncBadge')?.classList.add('show');
+    document.getElementById('sumupBadge').style.display = 'block';
+    document.getElementById('sumupMenuBadge').style.display = 'block';
+    document.getElementById('sumupInfo').style.display = 'block';
+    document.getElementById('tillModeSwitch')?.classList.add('sumup-mode');
+    document.getElementById('tillInterface')?.classList.add('sumup-mode');
+    document.getElementById('scannerArea')?.classList.add('sumup-mode');
+    
+    // Update terminal ID display
+    const config = JSON.parse(localStorage.getItem('sumup_config') || '{}');
+    if (config.terminalId) {
+        document.getElementById('terminalId').textContent = config.terminalId;
+    }
 }
 
 // QR & Loyalty
@@ -659,11 +692,11 @@ function generateQR() {
     const container = document.getElementById('qrcode');
     container.innerHTML = '';
     
-    const txnRef = 'LOLLY-' + Date.now().toString().slice(-8);
-    document.getElementById('lollyTransactionRef').textContent = 'TXN: ' + txnRef;
+    const txnRef = 'SUMUP-' + Date.now().toString().slice(-8);
+    document.getElementById('sumupTransactionRef').textContent = 'TXN: ' + txnRef;
     
     const qrData = JSON.stringify({
-        type: 'lolly_loyalty',
+        type: 'sumup_loyalty',
         user: currentUser.username,
         venue: 'junction-marsh',
         stamps: currentUser.stamps || 0,
@@ -692,7 +725,7 @@ function renderStamps() {
         stamp.className = 'stamp';
         if (i < stamps) {
             stamp.classList.add('earned');
-            if (lollyConnected) stamp.classList.add('lolly-synced');
+            if (sumupConnected) stamp.classList.add('sumup-synced');
             stamp.innerHTML = '✓';
         } else if (i === 9) {
             stamp.classList.add('reward');
@@ -712,8 +745,8 @@ function toggleTillMode() {
     
     if (tillMode) {
         btn.classList.add('active');
-        btn.innerHTML = '<span>✓</span><span>Lolly Active</span>';
-        btn.style.background = 'var(--lolly)';
+        btn.innerHTML = '<span>✓</span><span>SumUp Active</span>';
+        btn.style.background = 'var(--sumup)';
         switchTab('till');
     } else {
         btn.classList.remove('active');
@@ -723,38 +756,96 @@ function toggleTillMode() {
     }
 }
 
-function simulateLollyScan() {
-    showNotification('Scanning Lolly QR...', 'lolly');
-    setTimeout(() => {
-        loadCustomerForTill('customer1');
-        // Simulate Lolly basket
-        document.getElementById('basketItems').innerHTML = `
-            <div class="basket-item">
-                <span>Latte x1</span>
-                <span>£3.50</span>
-            </div>
-            <div class="basket-item">
-                <span>Croissant x1</span>
-                <span>£2.20</span>
-            </div>
-        `;
-        document.getElementById('basketItemCount').textContent = '2 items';
-        document.getElementById('basketTotal').textContent = '£5.70';
-    }, 1000);
+function setAmount(amount) {
+    document.getElementById('paymentAmount').value = amount.toFixed(2);
 }
 
-function linkLollyTransaction() {
-    const txnId = document.getElementById('lollyTxnInput').value;
-    if (!txnId) {
-        showNotification('Enter Lolly Transaction ID', true);
+function addToSumupBasket(item, price) {
+    currentBasket.push({ item, price });
+    showNotification(item + ' added to SumUp basket', 'sumup');
+    updateBasketDisplay();
+}
+
+function updateBasketDisplay() {
+    const itemsContainer = document.getElementById('basketItems');
+    const totalSpan = document.getElementById('basketTotal');
+    
+    if (currentBasket.length === 0) {
+        itemsContainer.innerHTML = '<div style="color: #666;">Basket empty</div>';
+        totalSpan.textContent = '£0.00';
         return;
     }
     
-    showNotification('Linking to Lolly...', 'lolly');
+    let total = 0;
+    itemsContainer.innerHTML = currentBasket.map(b => {
+        total += b.price;
+        return `<div class="basket-item"><span>${b.item}</span><span>£${b.price.toFixed(2)}</span></div>`;
+    }).join('');
+    
+    // Apply staff discount if applicable
+    if (currentCustomer && (currentCustomer.role === ROLES.STAFF || currentCustomer.role === ROLES.MANAGEMENT)) {
+        const discount = total * 0.2;
+        total = total * 0.8;
+        document.getElementById('discountRow').style.display = 'block';
+        document.getElementById('discountAmount').textContent = '£' + discount.toFixed(2);
+    } else {
+        document.getElementById('discountRow').style.display = 'none';
+    }
+    
+    totalSpan.textContent = '£' + total.toFixed(2);
+}
+
+function createSumupPayment() {
+    const amount = document.getElementById('paymentAmount').value;
+    if (!amount || amount <= 0) {
+        showNotification('Enter amount', true);
+        return;
+    }
+    
+    showNotification('Sending to SumUp card reader...', 'sumup');
+    
+    // Simulate SumUp terminal communication
+    setTimeout(() => {
+        showNotification('✓ Payment successful on SumUp terminal!', 'sumup');
+        document.getElementById('saleStatus').textContent = 'PAID';
+        document.getElementById('saleStatus').style.color = 'var(--success)';
+        
+        // Auto-add stamp
+        if (currentCustomer) {
+            addSumupStamp();
+        }
+        
+        // Clear basket after delay
+        setTimeout(() => {
+            currentBasket = [];
+            document.getElementById('paymentAmount').value = '';
+        }, 2000);
+    }, 2000);
+}
+
+function simulateSumupScan() {
+    showNotification('Scanning SumUp loyalty...', 'sumup');
+    setTimeout(() => {
+        loadCustomerForTill('customer1');
+        // Show sample basket
+        currentBasket = [{ item: 'Latte', price: 3.50 }];
+        updateBasketDisplay();
+    }, 1000);
+}
+
+function linkSumupTransaction() {
+    const txnId = document.getElementById('sumupTxnInput').value;
+    if (!txnId) {
+        showNotification('Enter SumUp transaction ID', true);
+        return;
+    }
+    
+    showNotification('Verifying SumUp transaction...', 'sumup');
     setTimeout(() => {
         if (!currentCustomer) loadCustomerForTill('staff1');
-        showNotification('Linked to ' + txnId, 'lolly');
-    }, 800);
+        showNotification('Transaction ' + txnId + ' linked', 'sumup');
+        addSumupStamp();
+    }, 1000);
 }
 
 function loadCustomerForTill(username) {
@@ -768,18 +859,13 @@ function loadCustomerForTill(username) {
     document.getElementById('customerName').textContent = user.firstName + ' ' + user.lastName;
     document.getElementById('customerAvatar').textContent = user.firstName[0];
     document.getElementById('customerEmail').textContent = user.email;
+    document.getElementById('customerStamps').textContent = (user.stamps || 0) + '/10 stamps';
     
     const isStaff = user.role === ROLES.STAFF || user.role === ROLES.MANAGEMENT;
-    document.getElementById('staffDiscountBanner').style.display = isStaff ? 'block' : 'none';
-    
-    if (isStaff) {
-        document.getElementById('discountRow').style.display = 'block';
-        document.getElementById('discountAmount').textContent = '£1.14';
-        document.getElementById('basketTotal').textContent = '£4.56';
-    }
+    document.getElementById('staffDiscountBanner').classList.toggle('show', isStaff);
 }
 
-function addLollyStamp() {
+function addSumupStamp() {
     if (!currentCustomer) return;
     
     let users = JSON.parse(localStorage.getItem('junction_users') || '{}');
@@ -789,7 +875,8 @@ function addLollyStamp() {
         users[username].stamps = (users[username].stamps || 0) + 1;
         localStorage.setItem('junction_users', JSON.stringify(users));
         
-        showNotification('Stamp added via Lolly!', 'lolly');
+        showNotification('Stamp added via SumUp!', 'sumup');
+        loadCustomerForTill(username);
         
         if (currentUser && currentUser.username === username) {
             currentUser.stamps = users[username].stamps;
@@ -799,36 +886,20 @@ function addLollyStamp() {
     }
 }
 
-function redeemViaLolly() {
+function redeemViaSumup() {
     if (!currentCustomer || (currentCustomer.stamps || 0) < 10) return;
     
     let users = JSON.parse(localStorage.getItem('junction_users') || '{}');
     users[currentCustomer.username].stamps = 0;
     localStorage.setItem('junction_users', JSON.stringify(users));
     
-    showNotification('☕ Free coffee processed via Lolly!', 'lolly');
+    showNotification('☕ Free coffee redeemed!', 'sumup');
+    loadCustomerForTill(currentCustomer.username);
     
     if (currentUser && currentUser.username === currentCustomer.username) {
         currentUser.stamps = 0;
         localStorage.setItem('junction_current_user', JSON.stringify(currentUser));
         renderStamps();
-    }
-}
-
-function processLollyPayment() {
-    showNotification('Processing Lolly payment...', 'lolly');
-    setTimeout(() => {
-        showNotification('✓ Payment complete! Receipt sent to Lolly.', 'lolly');
-    }, 1500);
-}
-
-function switchProvider(provider) {
-    currentProvider = provider;
-    document.querySelectorAll('.provider-tab').forEach(t => t.classList.remove('active'));
-    event.target.classList.add('active');
-    
-    if (provider === 'lolly') {
-        showNotification('Lolly mode activated', 'lolly');
     }
 }
 
@@ -840,8 +911,7 @@ function updateUI() {
     const profileAvatar = document.getElementById('profileAvatar');
     const profileName = document.getElementById('profileName');
     const profileEmail = document.getElementById('profileEmail');
-    const lollyConfig = document.getElementById('lollyConfig');
-    const providerSelection = document.getElementById('providerSelection');
+    const sumupConfig = document.getElementById('sumupConfig');
     
     if (currentUser) {
         const isStaff = currentUser.role === ROLES.STAFF || currentUser.role === ROLES.MANAGEMENT;
@@ -856,11 +926,9 @@ function updateUI() {
         }
         
         if (isManagement) {
-            lollyConfig.classList.add('show');
-            providerSelection.style.display = 'block';
+            sumupConfig.classList.add('show');
         } else {
-            lollyConfig.classList.remove('show');
-            providerSelection.style.display = 'none';
+            sumupConfig.classList.remove('show');
         }
         
         profileAvatar.textContent = currentUser.firstName[0];
@@ -874,8 +942,7 @@ function updateUI() {
         renderStamps();
     } else {
         tillSwitch.classList.remove('visible');
-        lollyConfig.classList.remove('show');
-        providerSelection.style.display = 'none';
+        sumupConfig.classList.remove('show');
         
         profileAvatar.textContent = 'G';
         profileName.textContent = 'Guest';
@@ -884,7 +951,7 @@ function updateUI() {
         loginPromptBtn.style.display = 'block';
     }
     
-    updateLollyUI();
+    updateSumupUI();
 }
 
 function switchTab(tabName) {
@@ -902,7 +969,7 @@ function switchTab(tabName) {
 function showNotification(message, type = 'success') {
     const notif = document.getElementById('notification');
     notif.textContent = message;
-    notif.className = 'notification show' + (type === 'lolly' ? ' lolly' : type === 'error' ? ' error' : '');
+    notif.className = 'notification show' + (type === 'sumup' ? ' sumup' : type === 'error' ? ' error' : '');
     setTimeout(() => notif.classList.remove('show'), 3000);
 }
 </script>
